@@ -20,7 +20,7 @@ for (const tab of tabs) {
 
     const element = template.content.firstElementChild.cloneNode(true);
     console.log(element);
-
+    
     const title = tab.title.split("-")[0].trim();
     const pathname = new URL(tab.url).pathname.slice("/docs".length);
 

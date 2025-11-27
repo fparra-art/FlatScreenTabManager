@@ -1,0 +1,86 @@
+//On récupere la taille de l'ecran 
+//On récupere la taille du body
+
+/* On fait une fonction qui viens incrementer la valeur d'un curseur
+ce curseur à comme valeur de base 0
+
+Puis à chaque boucle on vient ajouter une certaine valeur au curseur
+et on scroll() la page avec avec cette value
+
+lorsque l'on arrive à la fin (que la valeur du (curseur+taille de l'écran) > (taille du body)) alors on arrête la boucle e
+en evoyant un event précisant l'arrêt   
+
+exemple de valeurs :
+
+htmlPage = document.querySelector("html,body"); (pointe le body)
+screenHeight = 1000 (Un ecran de 1000px de hauteur); 
+bodyHeight = 2000 (Un body de 2000);
+cursorIncrementPerLoop = 5; (Un incrementation de 5px par boucle); 
+cursorHeight = 0; (Un curseur init à 0);
+scrollStarted = false; 
+
+lors de l'appuie d'une touche on démarre le scroll
+
+if (cursorHeight + screenHeight < bodyHeight){
+
+}
+
+*/
+
+
+
+var lastUpdate = Date.now();
+var myInterval = setInterval(tick, 0);
+
+const htmlPage = document.querySelector("html,body"); //(pointe le body)
+const screenHeight = window.innerHeight;
+const bodyHeight = document.body.offsetHeight;
+const cursorIncrementPerLoop = 5; //(Un incrementation de 5px par boucle);
+let lastCursorHeight = 0; //(Un curseur init à 0);
+let cursorHeight = 0; //(Un curseur init à 0);
+let scrollStarted = true;
+let index = 0;
+
+
+
+
+
+
+
+function tick() {
+    var now = Date.now();
+    var dt = now - lastUpdate;
+    lastUpdate = now;
+
+    update(dt);
+}
+
+
+
+
+function update(dt) {
+    if (scrollStarted) {
+
+
+        if ((cursorHeight + screenHeight) - cursorIncrementPerLoop < bodyHeight) {
+            cursorHeight += dt / 10;
+        }
+        else {
+            scrollStarted = false;
+        }
+
+        if (cursorHeight - lastCursorHeight > cursorIncrementPerLoop) {
+            htmlPage.scroll({
+                top: cursorHeight,
+                behavior: "smooth",
+            });
+
+            lastCursorHeight = cursorHeight;
+        }
+        console.log("oui")
+    }
+
+}
+
+
+
