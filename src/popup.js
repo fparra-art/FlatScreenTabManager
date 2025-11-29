@@ -2,7 +2,7 @@ const tabs = await chrome.tabs.query({
     url: [
         "https://developer.chrome.com/docs/webstore/*",
         "https://developer.chrome.com/docs/extensions/*",
-        "https://fr.wikipedia.org/wiki/*"
+        "https://*/*"
     ]
 });
 

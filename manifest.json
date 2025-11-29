@@ -14,18 +14,19 @@
     },
     "host_permissions": [
         "https://developer.chrome.com/*",
-        "https://fr.wikipedia.org/wiki/*"
+        "https://fr.wikipedia.org/wiki/*",
+        "https://*/*"
     ],
     "permissions": [
         "tabGroups"
     ],
     "background": {
-        "service_worker": "scripts/background.js"
+        "service_worker": "src/background.js"
     },
     "content_scripts": [
         {
             "js":[
-                "scripts/content.js"
+                "src/content.js"
             ],
             "run_at": "document_end",
             "matches": [
