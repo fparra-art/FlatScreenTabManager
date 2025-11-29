@@ -18,7 +18,9 @@
         "https://*/*"
     ],
     "permissions": [
-        "tabGroups"
+        "tabGroups", 
+        "scripting",
+        "activeTab"
     ],
     "background": {
         "service_worker": "src/background.js"
@@ -28,7 +30,7 @@
             "js":[
                 "src/content.js"
             ],
-            "run_at": "document_end",
+            "run_at": "document_idle",
             "matches": [
                 "<all_urls>"
             ]
