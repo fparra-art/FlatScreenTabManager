@@ -1,15 +1,18 @@
-console.log("in script");
 var lastUpdate = Date.now();
-var myInterval = setInterval(tick, 0);
+var myInterval = setInterval(tick, 16);
 
-const htmlPage = document.querySelector("html, body");
 const screenHeight = window.innerHeight;
-const bodyHeight = document.querySelector("devsite-content").offsetHeight;
+const htmlPage = document.querySelector("html");
+
 const cursorIncrementPerLoop = 5; //(Un incrementation de 5px par boucle);
 let lastCursorHeight = 0; //(Un curseur init à 0);
 let cursorHeight = 0; //(Un curseur init à 0);
-let scrollStarted = true;
-let index = 0;
+
+let scrollStarted = false;
+
+const body = document.body;
+const html = document.documentElement;
+let documentHeight = Math.max(body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight);
 
 
 function tick() {
@@ -18,30 +21,33 @@ function tick() {
     lastUpdate = now;
 
 
-    console.log(bodyHeight);
     update(dt);
 }
 
 
 function update(dt) {
+    if (!scrollStarted) return;
 
-    if (scrollStarted) {
-        if ((cursorHeight + screenHeight) - cursorIncrementPerLoop < bodyHeight) {
-            cursorHeight += dt / 10;
-        }
-        else {
+    documentHeight = Math.max(body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight);
+
+    if ((window.scrollY + screenHeight) < documentHeight - 10) {
+        cursorHeight += (dt / 10) * 10;
+        window.scrollTo(0, cursorHeight);
+    } else {
+        if (scrollStarted) {
             scrollStarted = false;
+            OnScrollEnded();
         }
-
-        if (cursorHeight - lastCursorHeight > cursorIncrementPerLoop) {
-            htmlPage.scroll({
-                top: cursorHeight,
-                behavior: "smooth",
-            });
-
-            lastCursorHeight = cursorHeight;
-        }
-        console.log("oui")
     }
 
+}
+
+
+
+function OnScrollEnded() {
+    console.log("Fin du scroll, changement d'onglet demandé...");
+
+    // ENVOI DU MESSAGE AU BACKGROUND
+    // C'est ici que la magie opère
+    chrome.runtime.sendMessage({ type: "SCROLL_FINISHED" });
 }

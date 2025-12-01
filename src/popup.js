@@ -2,7 +2,6 @@ const tabs = await chrome.tabs.query({
     url: [
         "https://developer.chrome.com/docs/webstore/*",
         "https://developer.chrome.com/docs/extensions/*",
-        "https://*/*"
     ]
 });
 
@@ -13,13 +12,9 @@ tabs.sort((a, b) => collator.compare(a.title, b.title));
 const template = document.getElementById("li_template");
 const elements = new Set();
 
-console.log(template);
 
 for (const tab of tabs) {
-
-
     const element = template.content.firstElementChild.cloneNode(true);
-    console.log(element);
     
     const title = tab.title.split("-")[0].trim();
     const pathname = new URL(tab.url).pathname.slice("/docs".length);
@@ -31,9 +26,6 @@ for (const tab of tabs) {
         await chrome.tabs.update(tab.id, { active: true });
         await chrome.windows.update(tab.windowId, { focused: true });
 
-        // $('html, body').animate({ scrollTop: $(document).height() - $(window).height() }, 3000, function () {
-        //     $(this).animate({ scrollTop: 0 }, 3000);
-        // });
     });
 
     elements.add(element);
@@ -49,3 +41,19 @@ button.addEventListener("click", async () => {
         await chrome.tabGroups.update(group, { title: "DOCS" });
     }
 })
+
+
+// const startButton = document.querySelector(".start-button");
+
+
+// startButton.addEventListener("click", async () => {
+//     const tabsIds = tab.map(t => t.id);
+
+
+//     chrome.runtime.sendMessage({
+//         type: "INIT_SCROLL_SEQUENCE",
+//         tabIds: tabsIds
+//     });
+
+//     window.close();
+// })
