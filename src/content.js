@@ -1,34 +1,62 @@
+var lastScrollUpdate = Date.now();
 var lastUpdate = Date.now();
-var myInterval = setInterval(tick, 16*4);
+var myRealTimeInterval = setInterval(tick, 16);
+var myInterval = setInterval(scrollTick, 16 * 20);
 
 const screenHeight = window.innerHeight;
 const htmlPage = document.querySelector("html");
 
-const cursorIncrementPerLoop = 5*4; //(Un incrementation de 5px par boucle);
+const cursorIncrementPerLoop = 5 * 30; //(Un incrementation de 5px par boucle);
 let lastCursorHeight = 0; //(Un curseur init à 0);
 let cursorHeight = 0; //(Un curseur init à 0);
 
 let scrollStarted = false;
+
+let timerBeforeResume = 10;
+let beforeResumeCounter = 0;
 
 const body = document.body;
 const html = document.documentElement;
 let documentHeight = Math.max(body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight);
 
 
+
+body.addEventListener("click", (e) => {
+    e.preventDefault();
+    scrollStarted = false;
+    beforeResumeCounter = timerBeforeResume;
+})
+
 function init() {
     console.log("init");
 
-    window.scrollTo({top:0,left:0,behavior:"instant"});
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
     lastCursorHeight = 0; //(Un curseur init à 0);
     cursorHeight = 0; //(Un curseur init à 0);
     scrollStarted = true;
 }
 
+
 function tick() {
     var now = Date.now();
     var dt = now - lastUpdate;
     lastUpdate = now;
+    if (beforeResumeCounter <= 0) return;
 
+
+    beforeResumeCounter -= dt/1000;
+
+    if (beforeResumeCounter <= 0 ){
+        scrollStarted = true;
+        cursorHeight = window.scrollY;
+    }
+    console.log(window.scrollY);
+}
+
+function scrollTick() {
+    var now = Date.now();
+    var dt = now - lastScrollUpdate;
+    lastScrollUpdate = now;
 
     update(dt);
 }
