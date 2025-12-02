@@ -43,7 +43,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             sendDetails(nextTabId, "GOOD_TO_GO");
 
         } else {
-            console.log("Séquence terminée !");
+            console.log(tabsQueue);
+            chrome.tabs.update(tabsQueue[0], { active: true });
+            sendDetails(tabsQueue[0], "GOOD_TO_GO");
         }
     }
 
@@ -57,9 +59,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 
 function sendDetails(id, sendData) {
-    chrome.tabs.sendMessage(id, {
-        greeting: sendData
-    }, (response) => {
-        console.log("the response from the content script : " + response.response);
+    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+        chrome.tabs.sendMessage(id, {
+            greeting: sendData
+        }, (response) => {
+            if (response)
+                console.log("the response from the content script : " + response.response);
+        });
     });
 }

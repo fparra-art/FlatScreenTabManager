@@ -46,6 +46,9 @@ const startButton = document.querySelector(".start-button");
 
 
 startButton.addEventListener("click", async () => {
+
+    chrome.runtime.restart();
+
     const tabsIds = tabs.map(t => t.id);
 
 
