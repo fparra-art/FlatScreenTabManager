@@ -1,6 +1,6 @@
 const tabs = await chrome.tabs.query({
     url: [
-        "https://developer.mozilla.org/fr/*"
+        "https://developer.mozilla.org/*/*"
     ]
 });
 
