@@ -3,17 +3,19 @@ let tabsQueue = []; // La liste des IDs d'onglets à visiter
 // 1. Recevoir la liste depuis le Popup
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
-       console.log('the message from the content scropt: ' + message.method);
-
+    console.log('the message from the content scropt: ' + message.message);
+    if (message.message === "INIT_SCROLL") {
         sendResponse({
             response: "Message received"
         });
+       sendDetails("totot")
+    }
 
 
     // if (message.type === "INIT_SCROLL_SEQUENCE") {
     //     tabsQueue = message.tabIds;
     //     console.log("Liste reçue :", tabsQueue);
-        
+
 
 
     //     // On active le premier onglet de la liste pour lancer la machine
@@ -27,10 +29,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     // // 2. Recevoir le signal de fin de scroll depuis le Content Script
     // if (message.type === "SCROLL_FINISHED") {
     //     console.log("Scroll terminé sur l'onglet", sender.tab.id);
-        
+
     //     // Trouver l'index de l'onglet actuel
     //     const currentTabIndex = tabsQueue.indexOf(sender.tab.id);
-        
+
     //     // Passer au suivant s'il en reste
     //     if (currentTabIndex !== -1 && currentTabIndex < tabsQueue.length - 1) {
     //         const nextTabId = tabsQueue[currentTabIndex + 1];
@@ -43,12 +45,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 
 
-function sendDetails(sendData){
-    chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+function sendDetails(sendData) {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
         chrome.tabs.sendMessage(tabs[0].id, {
             greeting: sendData
-        }, (response)=>{
-            alert("the response from the content scropt : " + response.response);
+        }, (response) => {
+            console.log("the response from the content scropt : " + response.response);
         })
     })
 }

@@ -43,14 +43,12 @@
 // }
 
 window.onload = () => {
-    this.alert('Ready');
-
     sendMessage();
 }
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
-    alert("the message from the background page :" + request.greeting);
+    console.log("the message from the background page :" + request.greeting);
 
     sendResponse({
         response: "Message reveived"
@@ -58,13 +56,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 });
 
 
-function sendMessage(){
+function sendMessage() {
     chrome.runtime.sendMessage({
-        method: "postList",
-        post_list: "The PostList"
-    }, (response) => {
-        alert("The response from the background page: " + response.response);
-    });
+        message: "INIT_SCROLL",
+    },
+        (response) => {
+            console.log(response);
+        }
+    );
 }
 
 
