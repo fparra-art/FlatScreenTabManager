@@ -1,7 +1,6 @@
 const tabs = await chrome.tabs.query({
     url: [
-        "https://developer.chrome.com/docs/webstore/*",
-        "https://developer.chrome.com/docs/extensions/*",
+        "https://developer.mozilla.org/fr/*"
     ]
 });
 
@@ -15,7 +14,7 @@ const elements = new Set();
 
 for (const tab of tabs) {
     const element = template.content.firstElementChild.cloneNode(true);
-    
+
     const title = tab.title.split("-")[0].trim();
     const pathname = new URL(tab.url).pathname.slice("/docs".length);
 
@@ -43,17 +42,17 @@ button.addEventListener("click", async () => {
 })
 
 
-// const startButton = document.querySelector(".start-button");
+const startButton = document.querySelector(".start-button");
 
 
-// startButton.addEventListener("click", async () => {
-//     const tabsIds = tab.map(t => t.id);
+startButton.addEventListener("click", async () => {
+    const tabsIds = tabs.map(t => t.id);
 
 
-//     chrome.runtime.sendMessage({
-//         type: "INIT_SCROLL_SEQUENCE",
-//         tabIds: tabsIds
-//     });
+    chrome.runtime.sendMessage({
+        type: "INIT_SCROLL_SEQUENCE",
+        tabIds: tabsIds
+    });
 
-//     window.close();
-// })
+    window.close();
+})
