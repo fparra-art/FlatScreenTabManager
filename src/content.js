@@ -28,14 +28,17 @@ body.addEventListener("click", (e) => {
 })
 
 function init() {
-    console.log("init");
-
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });
     lastCursorHeight = 0; //(Un curseur init à 0);
     cursorHeight = 0; //(Un curseur init à 0);
     scrollStarted = true;
 }
 
+
+function stop() {
+    scrollStarted = false;
+
+}
 
 function tick() {
     var now = Date.now();
@@ -44,9 +47,9 @@ function tick() {
     if (beforeResumeCounter <= 0) return;
 
 
-    beforeResumeCounter -= dt/1000;
+    beforeResumeCounter -= dt / 1000;
 
-    if (beforeResumeCounter <= 0 ){
+    if (beforeResumeCounter <= 0) {
         scrollStarted = true;
         cursorHeight = window.scrollY;
     }
@@ -85,6 +88,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.greeting === "GOOD_TO_GO") {
         init();
     }
+
+    if (request.greeting === "STOP") {
+        stop();
+    }
+
+
     console.log("the message from the background page :" + request.greeting);
 
     sendResponse({
@@ -96,7 +105,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 function sendMessage(message) {
     chrome.runtime.sendMessage({
-        message: message,
+        type: message,
     },
         (response) => {
             console.log("message from background" + response.response);

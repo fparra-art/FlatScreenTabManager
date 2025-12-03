@@ -22,9 +22,14 @@ for (const tab of tabs) {
     element.querySelector(".pathname").textContent = pathname;
 
     element.querySelector("a").addEventListener("click", async () => {
+        
+        chrome.runtime.sendMessage({
+            type: "MANUALLY_CHANGED_TAB",
+            tabId : tab.id
+        });
+
         await chrome.tabs.update(tab.id, { active: true });
         await chrome.windows.update(tab.windowId, { focused: true });
-
     });
 
     elements.add(element);
@@ -50,7 +55,6 @@ startButton.addEventListener("click", async () => {
     chrome.runtime.restart();
 
     const tabsIds = tabs.map(t => t.id);
-
 
     chrome.runtime.sendMessage({
         type: "INIT_SCROLL_SEQUENCE",
