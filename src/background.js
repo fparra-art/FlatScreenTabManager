@@ -27,6 +27,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
     // // 2. Recevoir le signal de fin de scroll depuis le Content Script
     if (message.type === "SCROLL_FINISHED") {
+        if (tabsQueue.length === 0) tabsQueue = message.tabsList;
         console.log("Scroll terminé sur l'onglet", sender.tab.id);
 
         // Trouver l'index de l'onglet actuel
@@ -54,14 +55,45 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 });
 
 
-
 function sendDetails(id, sendData) {
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
         chrome.tabs.sendMessage(id, {
-            greeting: sendData
+            greeting: sendData,
+            tabsList: tabsQueue,
         }, (response) => {
             if (response)
                 console.log("the response from the content script : " + response.response);
         });
     });
 }
+
+
+
+/// Keep Alive
+
+
+// let heartbeatInterval;
+
+// async function runHeartbeat(){
+//     console.log("yoyo");
+//     await chrome.storage.local.set({'last-heartbeat ' : new Date().getTime()});
+// }
+
+
+
+// async function startHeartbeat() {
+//     runHeartbeat().then(() => {
+//         heartbeatInterval = setInterval(runHeartbeat,20*1000);
+//     });
+// }
+
+
+// async function stopHeartbeat(){
+//     clearInterval(heartbeatInterval);
+// }
+
+// async function  getLastHeatbeat() {
+//     return (await chrome.local.storage.local.get('last-heartbeat'))['last-heartbeat'];
+// }
+
+// startHeartbeat();

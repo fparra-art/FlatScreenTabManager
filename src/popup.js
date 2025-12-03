@@ -1,6 +1,6 @@
 const tabs = await chrome.tabs.query({
     url: [
-        "https://developer.mozilla.org/*/*"
+        "https://p.datadoghq.eu/*"
     ]
 });
 
@@ -22,7 +22,7 @@ for (const tab of tabs) {
     element.querySelector(".pathname").textContent = pathname;
 
     element.querySelector("a").addEventListener("click", async () => {
-        
+
         chrome.runtime.sendMessage({
             type: "MANUALLY_CHANGED_TAB",
             tabId : tab.id

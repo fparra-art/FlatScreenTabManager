@@ -1,7 +1,8 @@
 var lastScrollUpdate = Date.now();
 var lastUpdate = Date.now();
 var myRealTimeInterval = setInterval(tick, 16);
-var myInterval = setInterval(scrollTick, 16 * 20);
+var timeBeforeScroll = 300;
+var myInterval = setInterval(scrollTick, 16 * timeBeforeScroll);
 
 const screenHeight = window.innerHeight;
 const htmlPage = document.querySelector("html");
@@ -19,15 +20,18 @@ const body = document.body;
 const html = document.documentElement;
 let documentHeight = Math.max(body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight);
 
-
+let tabsQueue;
 
 body.addEventListener("click", (e) => {
-    e.preventDefault();
+    if (scrollStarted) {
+        e.preventDefault();
+    }
     scrollStarted = false;
     beforeResumeCounter = timerBeforeResume;
 })
 
 function init() {
+    myInterval = setInterval(scrollTick, 16 * timeBeforeScroll);
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });
     lastCursorHeight = 0; //(Un curseur init à 0);
     cursorHeight = 0; //(Un curseur init à 0);
@@ -37,7 +41,6 @@ function init() {
 
 function stop() {
     scrollStarted = false;
-
 }
 
 function tick() {
@@ -53,7 +56,6 @@ function tick() {
         scrollStarted = true;
         cursorHeight = window.scrollY;
     }
-    console.log(window.scrollY);
 }
 
 function scrollTick() {
@@ -71,7 +73,7 @@ function update(dt) {
     documentHeight = Math.max(body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight);
 
     if ((window.scrollY + screenHeight) < documentHeight - 10) {
-        cursorHeight += (dt / 10) * 2;
+        cursorHeight += cursorIncrementPerLoop;
         window.scrollTo(0, cursorHeight);
     } else {
         if (scrollStarted) {
@@ -87,6 +89,8 @@ function update(dt) {
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.greeting === "GOOD_TO_GO") {
         init();
+        tabsQueue = request.tabsList;
+        console.log(tabsQueue);
     }
 
     if (request.greeting === "STOP") {
@@ -106,6 +110,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 function sendMessage(message) {
     chrome.runtime.sendMessage({
         type: message,
+        tabsList: tabsQueue
     },
         (response) => {
             console.log("message from background" + response.response);

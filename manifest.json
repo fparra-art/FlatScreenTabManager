@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "author": "Florian Parra",
-    "version": "0.5",
+    "version": "0.7",
     "name": "Flat Screen Tab Manager",
     "icons": {
         "16": "images/icon-16.png",
@@ -13,7 +13,7 @@
         "default_popup": "popup.html"
     },
     "host_permissions": [
-        "<all_urls>"
+        "https://p.datadoghq.eu/*"
     ],
     "permissions": [
         "tabs",
@@ -31,7 +31,7 @@
             ],
             "run_at": "document_end",
             "matches": [
-                "<all_urls>"
+                "https://p.datadoghq.eu/*"
             ]
         }
     ]
