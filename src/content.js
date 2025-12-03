@@ -70,11 +70,13 @@ function scrollTick() {
 function update(dt) {
     if (!scrollStarted) return;
 
+    console.log("in update");
+
     documentHeight = Math.max(body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight);
 
     if ((window.scrollY + screenHeight) < documentHeight - 10) {
         cursorHeight += cursorIncrementPerLoop;
-        window.scrollTo(0, cursorHeight);
+        window.scrollTo({left:0, top:cursorHeight, behavior:"smooth"});
     } else {
         if (scrollStarted) {
             scrollStarted = false;
@@ -90,7 +92,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.greeting === "GOOD_TO_GO") {
         init();
         tabsQueue = request.tabsList;
-        console.log(tabsQueue);
+        // console.log(tabsQueue);
     }
 
     if (request.greeting === "STOP") {
@@ -120,7 +122,7 @@ function sendMessage(message) {
 
 
 function OnScrollEnded() {
-    console.log("Fin du scroll, changement d'onglet demandé...");
+    // console.log("Fin du scroll, changement d'onglet demandé...");
 
     sendMessage("SCROLL_FINISHED");
 }
