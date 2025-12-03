@@ -23,12 +23,12 @@ for (const tab of tabs) {
 
     element.querySelector("a").addEventListener("click", async () => {
 
-        const currentActiveTab = tabs.filter(({ active, focused }) => active == true && focused == true);
-        console.log("lala");
+        const currentActiveTab = tabs.filter(({active, selected}) => active == true && selected == true);
         chrome.runtime.sendMessage({
             type: "MANUALLY_CHANGED_TAB",
             tabId: tab.id,
-            tabsList: tabs.map(({ id }) => id)
+            tabsList: tabs.map(({ id }) => id),
+            lastTabId: currentActiveTab[0].id,
         });
 
         await chrome.tabs.update(tab.id, { active: true });

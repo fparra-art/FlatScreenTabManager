@@ -1,13 +1,14 @@
 var lastScrollUpdate = Date.now();
 var lastUpdate = Date.now();
 var myRealTimeInterval = setInterval(tick, 16);
+
 var timeBeforeScroll = 300;
 var myInterval = setInterval(scrollTick, 16 * timeBeforeScroll);
 
 const screenHeight = window.innerHeight;
 const htmlPage = document.querySelector("html");
 
-const cursorIncrementPerLoop = 5 * 30; //(Un incrementation de 5px par boucle);
+const cursorIncrementPerLoop = 5 * 10; //(Un incrementation de 5px par boucle);
 let lastCursorHeight = 0; //(Un curseur init à 0);
 let cursorHeight = 0; //(Un curseur init à 0);
 
@@ -70,13 +71,27 @@ function scrollTick() {
 function update(dt) {
     if (!scrollStarted) return;
 
-    console.log("in update");
 
     documentHeight = Math.max(body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight);
 
-    if ((window.scrollY + screenHeight) < documentHeight - 10) {
+    if (documentHeight - 100 < screenHeight ) {
+        console.log(documentHeight + " limit is " + screenHeight)
+
+        if (scrollStarted) {
+            scrollStarted = false;
+            OnScrollEnded();
+        }
+        return;
+    }
+
+    const currentHeight = (window.scrollY + screenHeight + cursorIncrementPerLoop);
+    const limit = documentHeight - 100;
+
+    console.log(currentHeight + " limit is " + limit)
+
+    if (currentHeight < limit) {
         cursorHeight += cursorIncrementPerLoop;
-        window.scrollTo({left:0, top:cursorHeight, behavior:"smooth"});
+        window.scrollTo({ left: 0, top: cursorHeight, behavior: "smooth" });
     } else {
         if (scrollStarted) {
             scrollStarted = false;

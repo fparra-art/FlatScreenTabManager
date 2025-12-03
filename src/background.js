@@ -5,9 +5,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
     if (message.type === "MANUALLY_CHANGED_TAB") {
         if (tabsQueue.length === 0) tabsQueue = message.tabsList;
-
         // Trouver l'index de l'onglet actuel
-        sendDetails(tabsQueue[currentTabIndex], "STOP");
+        sendDetails(tabsQueue[message.lastTabId], "STOP");
         currentTabIndex = tabsQueue.indexOf(message.tabId);
         sendDetails(tabsQueue[currentTabIndex], "GOOD_TO_GO");
     }
