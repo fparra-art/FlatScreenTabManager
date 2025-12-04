@@ -1,4 +1,3 @@
-
 var lastScrollUpdate = Date.now();
 var lastUpdate = Date.now();
 var myRealTimeInterval = setInterval(tick, 16);
@@ -10,7 +9,7 @@ const screenHeight = window.innerHeight;
 const htmlPage = document.querySelector("html");
 
 const cursorIncrementPerLoop = 5 * 10; //(Un incrementation de 5px par boucle);
-let lastCursorHeight = 0; //(Un curseur init à 0);
+let lastCurrentHeight = 0; //(Un curseur init à 0);
 let nbSameCursorHeight = 0;
 let cursorHeight = 0; //(Un curseur init à 0);
 
@@ -27,8 +26,8 @@ let documentHeight = Math.max(body.scrollHeight, body.offsetHeight, html.clientH
 let tabsQueue;
 let tabId;
 
+
 body.addEventListener("click", (e) => {
-    console.log(scrollStarted);
     if (!scrollStarted) return;
 
     if (scrollStarted) {
@@ -41,7 +40,7 @@ body.addEventListener("click", (e) => {
 function init() {
     clearInterval(myInterval);
     myInterval = setInterval(scrollTick, 16 * timeBeforeScroll);
-    lastCursorHeight = 0; //(Un curseur init à 0);
+    lastCurrentHeight = 0; //(Un curseur init à 0);
     cursorHeight = 0; //(Un curseur init à 0);
     nbSameCursorHeight = 0;
     scrollStarted = true;
@@ -53,10 +52,11 @@ function init() {
 function stop() {
     clearInterval(myInterval);
     myInterval = setInterval(scrollTick, 16 * timeBeforeScroll);
-    lastCursorHeight = 0; //(Un curseur init à 0);
+    lastCurrentHeight = 0; //(Un curseur init à 0);
     cursorHeight = 0; //(Un curseur init à 0);
     scrollStarted = false;
     nbSameCursorHeight = 0;
+    beforeResumeCounter = 0;
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });
 }
 
@@ -100,7 +100,7 @@ function update(dt) {
         return;
     }
 
-    const currentHeight = (window.scrollY + screenHeight + cursorIncrementPerLoop);
+    const currentHeight = (window.scrollY + screenHeight);
     const limit = documentHeight - 100;
 
 
@@ -115,9 +115,13 @@ function update(dt) {
         }
     }
 
-    if (cursorHeight === lastCursorHeight) {
+    console.log(currentHeight + " <- limit = " + limit);
+    console.log("cursor same height = " + nbSameCursorHeight);
+    console.log("current height = " + currentHeight + " last current height = " + lastCurrentHeight);
+
+    if (currentHeight === lastCurrentHeight) {
         nbSameCursorHeight++;
-        if (nbSameCursorHeight > 5) {
+        if (nbSameCursorHeight > 1) {
             if (scrollStarted) {
                 stop();
                 OnScrollEnded();
@@ -125,7 +129,7 @@ function update(dt) {
         }
     }
 
-    lastCursorHeight = cursorHeight;
+    lastCurrentHeight = currentHeight;
 }
 
 
@@ -200,8 +204,8 @@ function showButtons() {
             const button = document.createElement("button");
             button.setAttribute("tabId", tabsQueue[i]);
             button.style.borderRadius = "2rem";
-            button.style.width = "4rem";
-            button.style.height = "4rem";
+            button.style.width = "2.5rem";
+            button.style.height = "2.5rem";
 
 
             button.style.backgroundColor = tabsQueue[i] === tabId ? "green" : "red";
