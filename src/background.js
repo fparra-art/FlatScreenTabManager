@@ -5,9 +5,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
     if (message.type === "MANUALLY_CHANGED_TAB") {
         if (tabsQueue.length === 0) tabsQueue = message.tabsList;
-        // Trouver l'index de l'onglet actuel
-        sendDetails(tabsQueue[message.lastTabId], "STOP");
+
+        console.log(message.lastTabId);
+        currentTabIndex = tabsQueue.indexOf(message.lastTabId);
+        sendDetails(tabsQueue[currentTabIndex], "STOP");
+
+        console.log(message.tabId);
         currentTabIndex = tabsQueue.indexOf(message.tabId);
+        chrome.tabs.update(tabsQueue[currentTabIndex], { active: true });
         sendDetails(tabsQueue[currentTabIndex], "GOOD_TO_GO");
     }
 
@@ -58,14 +63,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 
 function sendDetails(id, sendData) {
-    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-        chrome.tabs.sendMessage(id, {
-            greeting: sendData,
-            tabsList: tabsQueue,
-        }, (response) => {
-            if (response)
-                console.log("the response from the content script : " + response.response);
-        });
+    chrome.tabs.sendMessage(id, {
+        greeting: sendData,
+        tabsList: tabsQueue,
+        tabId: id
+    }, (response) => {
+        if (response)
+            console.log("the response from the content script : " + response.response);
     });
 }
 

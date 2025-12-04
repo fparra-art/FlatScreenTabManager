@@ -24,6 +24,7 @@ for (const tab of tabs) {
     element.querySelector("a").addEventListener("click", async () => {
 
         const currentActiveTab = tabs.filter(({active, selected}) => active == true && selected == true);
+
         chrome.runtime.sendMessage({
             type: "MANUALLY_CHANGED_TAB",
             tabId: tab.id,
@@ -31,8 +32,8 @@ for (const tab of tabs) {
             lastTabId: currentActiveTab[0].id,
         });
 
-        await chrome.tabs.update(tab.id, { active: true });
-        await chrome.windows.update(tab.windowId, { focused: true });
+        // await chrome.tabs.update(tab.id, { active: true });
+        // await chrome.windows.update(tab.windowId, { focused: true });
     });
 
     elements.add(element);

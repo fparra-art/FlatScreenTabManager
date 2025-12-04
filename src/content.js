@@ -22,6 +22,7 @@ const html = document.documentElement;
 let documentHeight = Math.max(body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight);
 
 let tabsQueue;
+let tabId;
 
 body.addEventListener("click", (e) => {
     if (scrollStarted) {
@@ -32,16 +33,18 @@ body.addEventListener("click", (e) => {
 })
 
 function init() {
+    clearInterval(myInterval);
     myInterval = setInterval(scrollTick, 16 * timeBeforeScroll);
-    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
     lastCursorHeight = 0; //(Un curseur init à 0);
     cursorHeight = 0; //(Un curseur init à 0);
     scrollStarted = true;
+    showButtons();
 }
 
 
 function stop() {
     scrollStarted = false;
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
 }
 
 function tick() {
@@ -74,11 +77,11 @@ function update(dt) {
 
     documentHeight = Math.max(body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight);
 
-    if (documentHeight - 100 < screenHeight ) {
+    if (documentHeight - 100 < screenHeight) {
         console.log(documentHeight + " limit is " + screenHeight)
 
         if (scrollStarted) {
-            scrollStarted = false;
+            stop();
             OnScrollEnded();
         }
         return;
@@ -94,7 +97,7 @@ function update(dt) {
         window.scrollTo({ left: 0, top: cursorHeight, behavior: "smooth" });
     } else {
         if (scrollStarted) {
-            scrollStarted = false;
+            stop();
             OnScrollEnded();
         }
     }
@@ -105,8 +108,9 @@ function update(dt) {
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.greeting === "GOOD_TO_GO") {
-        init();
         tabsQueue = request.tabsList;
+        tabId = request.tabId;
+        init();
         // console.log(tabsQueue);
     }
 
@@ -135,9 +139,54 @@ function sendMessage(message) {
     );
 }
 
+function sendManualChangeMessage(message, nextId) {
+    chrome.runtime.sendMessage({
+        type: message,
+        tabsList: tabsQueue,
+        tabId: nextId,
+        lastTabId: tabId
+    }
+        ,
+        (response) => {
+            console.log("message from background" + response.response);
+        }
+    );
+}
+
 
 function OnScrollEnded() {
     // console.log("Fin du scroll, changement d'onglet demandé...");
 
     sendMessage("SCROLL_FINISHED");
+}
+
+function showButtons() {
+    console.log(tabsQueue);
+    if (tabsQueue && tabsQueue.length > 0) {
+        const buttonsDiv = document.createElement("div");
+        buttonsDiv.style.border = "solid 0.2rem red";
+        buttonsDiv.style.width = "100%";
+        buttonsDiv.style.display = "flex";
+        buttonsDiv.style.flexDirection = "row";
+        buttonsDiv.style.justifyContent = "space-between";
+        buttonsDiv.style.position = "fixed";
+        buttonsDiv.style.zIndex = 100;
+        buttonsDiv.style.top = 0;
+        buttonsDiv.style.left = 0;
+
+        for (let i = 0; i < tabsQueue.length; i++) {
+            const button = document.createElement("button");
+            button.innerText = "Button";
+            button.setAttribute("tabId", tabsQueue[i]);
+            buttonsDiv.append(button);
+
+            button.addEventListener("click", (e) => {
+                sendManualChangeMessage("MANUALLY_CHANGED_TAB", tabsQueue[i])
+            })
+
+        }
+        body.append(buttonsDiv);
+
+        console.log(buttonsDiv);
+    }
 }
