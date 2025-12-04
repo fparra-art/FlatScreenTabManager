@@ -59,6 +59,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 });
 
 
+
+
 function sendDetails(id, sendData) {
     chrome.tabs.sendMessage(id, {
         greeting: sendData,

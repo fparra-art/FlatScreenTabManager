@@ -23,9 +23,11 @@ const body = document.body;
 const html = document.documentElement;
 let documentHeight = Math.max(body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight);
 
-let tabsQueue;
-let tabId;
+let tabsQueue = null;
+let tabId = null;
 
+let buttonsDiv;
+const buttonArray = [];
 
 body.addEventListener("click", (e) => {
     if (!scrollStarted) return;
@@ -36,6 +38,18 @@ body.addEventListener("click", (e) => {
     scrollStarted = false;
     beforeResumeCounter = timerBeforeResume;
 })
+
+body.addEventListener("wheel", (e) => {
+    if (!scrollStarted) return;
+
+    if (scrollStarted) {
+        e.preventDefault();
+    }
+    scrollStarted = false;
+    beforeResumeCounter = timerBeforeResume;
+})
+
+
 
 function init() {
     clearInterval(myInterval);
@@ -60,7 +74,22 @@ function stop() {
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });
 }
 
+function pause() {
+    scrollStarted = false;
+}
+
+function resume() {
+    scrollStarted = true;
+    cursorHeight = window.scrollY;
+
+}
+
 function tick() {
+    if (tabId === null || tabsQueue === null) {
+
+        return;
+    }
+
     var now = Date.now();
     var dt = now - lastUpdate;
     lastUpdate = now;
@@ -87,6 +116,11 @@ function scrollTick() {
 
 
 function update(dt) {
+    if (tabId === null || tabsQueue === null) {
+
+        return;
+    }
+
     if (!scrollStarted) return;
 
 
@@ -182,13 +216,15 @@ function sendManualChangeMessage(message, nextId) {
 
 
 function OnScrollEnded() {
-
     sendMessage("SCROLL_FINISHED");
+
+    tabsQueue = null;
+    tabId = null;
 }
 
 function showButtons() {
     if (tabsQueue && tabsQueue.length > 0) {
-        const buttonsDiv = document.createElement("div");
+        buttonsDiv = document.createElement("div");
         // buttonsDiv.style.border = "solid 0.2rem red";
         buttonsDiv.style.width = "100%";
         buttonsDiv.style.display = "flex";
@@ -213,10 +249,14 @@ function showButtons() {
             buttonsDiv.append(button);
 
             button.addEventListener("click", (e) => {
+                if (tabsQueue[i] === tabId) {
+                    scrollStarted ? pause() : resume();
+                    return;
+                }
                 e.preventDefault();
                 sendManualChangeMessage("MANUALLY_CHANGED_TAB", tabsQueue[i])
             })
-
+            buttonArray.push(button);
         }
         html.append(buttonsDiv);
     }
