@@ -73,33 +73,3 @@ function sendDetails(id, sendData) {
     });
 }
 
-
-
-/// Keep Alive
-
-
-// let heartbeatInterval;
-
-// async function runHeartbeat(){
-//     console.log("yoyo");
-//     await chrome.storage.local.set({'last-heartbeat ' : new Date().getTime()});
-// }
-
-
-
-// async function startHeartbeat() {
-//     runHeartbeat().then(() => {
-//         heartbeatInterval = setInterval(runHeartbeat,20*1000);
-//     });
-// }
-
-
-// async function stopHeartbeat(){
-//     clearInterval(heartbeatInterval);
-// }
-
-// async function  getLastHeatbeat() {
-//     return (await chrome.local.storage.local.get('last-heartbeat'))['last-heartbeat'];
-// }
-
-// startHeartbeat();

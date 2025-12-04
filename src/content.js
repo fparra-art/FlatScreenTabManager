@@ -10,7 +10,9 @@ const htmlPage = document.querySelector("html");
 
 const cursorIncrementPerLoop = 5 * 10; //(Un incrementation de 5px par boucle);
 let lastCursorHeight = 0; //(Un curseur init à 0);
+let nbSameCursorHeight = 0;
 let cursorHeight = 0; //(Un curseur init à 0);
+
 
 let scrollStarted = false;
 
@@ -37,13 +39,20 @@ function init() {
     myInterval = setInterval(scrollTick, 16 * timeBeforeScroll);
     lastCursorHeight = 0; //(Un curseur init à 0);
     cursorHeight = 0; //(Un curseur init à 0);
+    nbSameCursorHeight = 0;
     scrollStarted = true;
     showButtons();
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
 }
 
 
 function stop() {
+    clearInterval(myInterval);
+    myInterval = setInterval(scrollTick, 16 * timeBeforeScroll);
+    lastCursorHeight = 0; //(Un curseur init à 0);
+    cursorHeight = 0; //(Un curseur init à 0);
     scrollStarted = false;
+    nbSameCursorHeight = 0;
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });
 }
 
@@ -78,8 +87,6 @@ function update(dt) {
     documentHeight = Math.max(body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight);
 
     if (documentHeight - 100 < screenHeight) {
-        console.log(documentHeight + " limit is " + screenHeight)
-
         if (scrollStarted) {
             stop();
             OnScrollEnded();
@@ -90,7 +97,7 @@ function update(dt) {
     const currentHeight = (window.scrollY + screenHeight + cursorIncrementPerLoop);
     const limit = documentHeight - 100;
 
-    console.log(currentHeight + " limit is " + limit)
+
 
     if (currentHeight < limit) {
         cursorHeight += cursorIncrementPerLoop;
@@ -102,6 +109,17 @@ function update(dt) {
         }
     }
 
+    if (cursorHeight === lastCursorHeight) {
+        nbSameCursorHeight++;
+        if (nbSameCursorHeight > 5) {
+            if (scrollStarted) {
+                stop();
+                OnScrollEnded();
+            }
+        }
+    }
+
+    lastCursorHeight = cursorHeight;
 }
 
 
@@ -164,7 +182,7 @@ function showButtons() {
     console.log(tabsQueue);
     if (tabsQueue && tabsQueue.length > 0) {
         const buttonsDiv = document.createElement("div");
-        buttonsDiv.style.border = "solid 0.2rem red";
+        // buttonsDiv.style.border = "solid 0.2rem red";
         buttonsDiv.style.width = "100%";
         buttonsDiv.style.display = "flex";
         buttonsDiv.style.flexDirection = "row";
@@ -173,11 +191,18 @@ function showButtons() {
         buttonsDiv.style.zIndex = 100;
         buttonsDiv.style.top = 0;
         buttonsDiv.style.left = 0;
+        buttonsDiv.style.paddingInline = "20%";
 
         for (let i = 0; i < tabsQueue.length; i++) {
             const button = document.createElement("button");
-            button.innerText = "Button";
             button.setAttribute("tabId", tabsQueue[i]);
+            button.style.borderRadius = "2rem";
+            button.style.width = "4rem";
+            button.style.height = "4rem";
+
+
+            button.style.backgroundColor = tabsQueue[i] === tabId ? "green" : "red";
+
             buttonsDiv.append(button);
 
             button.addEventListener("click", (e) => {

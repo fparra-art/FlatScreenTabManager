@@ -31,9 +31,6 @@ for (const tab of tabs) {
             tabsList: tabs.map(({ id }) => id),
             lastTabId: currentActiveTab[0].id,
         });
-
-        // await chrome.tabs.update(tab.id, { active: true });
-        // await chrome.windows.update(tab.windowId, { focused: true });
     });
 
     elements.add(element);
