@@ -77,7 +77,6 @@ function update(dt) {
 
             lastCursorHeight = cursorHeight;
         }
-        console.log("oui")
     }
 
 }

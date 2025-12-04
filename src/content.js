@@ -1,3 +1,4 @@
+
 var lastScrollUpdate = Date.now();
 var lastUpdate = Date.now();
 var myRealTimeInterval = setInterval(tick, 16);
@@ -27,6 +28,9 @@ let tabsQueue;
 let tabId;
 
 body.addEventListener("click", (e) => {
+    console.log(scrollStarted);
+    if (!scrollStarted) return;
+
     if (scrollStarted) {
         e.preventDefault();
     }
@@ -64,6 +68,8 @@ function tick() {
 
 
     beforeResumeCounter -= dt / 1000;
+
+    console.log(beforeResumeCounter);
 
     if (beforeResumeCounter <= 0) {
         scrollStarted = true;
@@ -129,7 +135,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         tabsQueue = request.tabsList;
         tabId = request.tabId;
         init();
-        // console.log(tabsQueue);
     }
 
     if (request.greeting === "STOP") {
@@ -173,13 +178,11 @@ function sendManualChangeMessage(message, nextId) {
 
 
 function OnScrollEnded() {
-    // console.log("Fin du scroll, changement d'onglet demandé...");
 
     sendMessage("SCROLL_FINISHED");
 }
 
 function showButtons() {
-    console.log(tabsQueue);
     if (tabsQueue && tabsQueue.length > 0) {
         const buttonsDiv = document.createElement("div");
         // buttonsDiv.style.border = "solid 0.2rem red";
@@ -206,12 +209,11 @@ function showButtons() {
             buttonsDiv.append(button);
 
             button.addEventListener("click", (e) => {
+                e.preventDefault();
                 sendManualChangeMessage("MANUALLY_CHANGED_TAB", tabsQueue[i])
             })
 
         }
-        body.append(buttonsDiv);
-
-        console.log(buttonsDiv);
+        html.append(buttonsDiv);
     }
 }
