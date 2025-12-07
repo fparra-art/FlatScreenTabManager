@@ -1,3 +1,10 @@
+chrome.runtime.onConnect.addListener((port) => {
+    port.onMessage.addListener((message) => {
+        console.log(message);
+        port.postMessage('pong');
+    })
+})
+
 let tabsQueue = []; // La liste des IDs d'onglets à visiter
 let currentTabIndex = 0;
 
@@ -51,6 +58,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         }
     }
 
+    if (message.type === "KeepAlive"){
+        console.log("please work");
+    }
 
     sendResponse({
         response: "Message Received"

@@ -1,3 +1,14 @@
+const port = chrome.runtime.connect();
+
+port.onMessage.addListener(message => {
+    console.log(message);
+})
+
+
+setInterval(() => {
+    port.postMessage('ping');
+},10000)
+
 var lastScrollUpdate = Date.now();
 var lastUpdate = Date.now();
 var myRealTimeInterval = setInterval(tick, 16);

@@ -16,6 +16,7 @@
         "https://p.datadoghq.eu/*"
     ],
     "permissions": [
+        "offscreen",
         "tabs",
         "tabGroups",
         "scripting",
