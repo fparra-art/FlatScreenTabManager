@@ -116,6 +116,9 @@ function sendDetails(id, sendData) {
 chrome.tabs.onActivated.addListener(async function (activeInfo) {
     await getAllowedTabs();
 
+
+    console.log(scriptChanged);
+
     if (tabsQueue.find((id) => id === activeInfo.tabId) !== undefined) {
         for (let i = 0; i < tabsQueue.length; i++) {
             if (tabsQueue[i] !== activeInfo.tabId) {
@@ -123,7 +126,6 @@ chrome.tabs.onActivated.addListener(async function (activeInfo) {
             } else {
                 if (!scriptChanged) {
                     sendDetails(activeInfo.tabId, "ARRIVED");
-                    scriptChanged = false;
                 }
             }
 
@@ -134,4 +136,9 @@ chrome.tabs.onActivated.addListener(async function (activeInfo) {
             sendDetails(tabsQueue[i], "STOP");
         }
     }
+
+    scriptChanged = false;
+
 });
+
+
