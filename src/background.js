@@ -1,16 +1,59 @@
-chrome.runtime.onConnect.addListener((port) => {
-    port.onMessage.addListener((message) => {
-        console.log(message);
-        port.postMessage('pong');
-    })
-})
+// chrome.runtime.onConnect.addListener((port) => {
+//     port.onMessage.addListener((message) => {
+//         console.log(message);
+//         port.postMessage('pong');
+//     })
+// })
+
+
+chrome.tabs.onActivated.addListener(async function (activeInfo) {
+    await getAllowedTabs();
+
+
+    if (tabsQueue.find((id) => id === activeInfo.tabId) !== undefined) {
+        console.log("oui ");
+    }else{
+        console.log("non");
+    }
+});
+
 
 let tabsQueue = []; // La liste des IDs d'onglets à visiter
 let currentTabIndex = 0;
 
 
+
+async function getAllowedTabs() {
+    if (tabsQueue.length > 0) return;
+
+    console.log("searching tabs");
+
+    const tabs = await chrome.tabs.query({
+        url: [
+            "https://p.datadoghq.eu/*"
+        ]
+    });
+
+
+    const collator = new Intl.Collator();
+    tabs.sort((a, b) => collator.compare(a.title, b.title));
+
+    console.log("Tabs Found :")
+    console.log(tabs);
+
+    tabsQueue = tabs.map(t => t.id);
+
+
+}
+
 // 1. Recevoir la liste depuis le Popup
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
+
+    sendResponse({
+        response: "Message Received"
+    })
+
+    await getAllowedTabs();
 
     if (message.type === "MANUALLY_CHANGED_TAB") {
         if (tabsQueue.length === 0) tabsQueue = message.tabsList;
@@ -58,13 +101,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         }
     }
 
-    if (message.type === "KeepAlive"){
-        console.log("please work");
-    }
 
-    sendResponse({
-        response: "Message Received"
-    })
 
 });
 
