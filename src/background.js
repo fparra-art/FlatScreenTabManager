@@ -11,9 +11,18 @@ chrome.tabs.onActivated.addListener(async function (activeInfo) {
 
 
     if (tabsQueue.find((id) => id === activeInfo.tabId) !== undefined) {
-        console.log("oui ");
-    }else{
-        console.log("non");
+
+        for (let i = 0; i < tabsQueue.length; i++) {
+            if (tabsQueue[i] !== activeInfo.tabId) {
+                sendDetails(tabsQueue[i], "STOP");
+            }
+            
+        }
+
+    } else {
+        for (let i = 0; i < tabsQueue.length; i++) {
+            sendDetails(tabsQueue[i], "STOP");
+        }
     }
 });
 
