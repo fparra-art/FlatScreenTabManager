@@ -43,7 +43,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
         response: "Message Received"
     })
 
-    manuallyChanged = true;
+    scriptChanged = true;
 
     await getAllowedTabs();
 
@@ -117,13 +117,14 @@ chrome.tabs.onActivated.addListener(async function (activeInfo) {
     await getAllowedTabs();
 
     if (tabsQueue.find((id) => id === activeInfo.tabId) !== undefined) {
-
         for (let i = 0; i < tabsQueue.length; i++) {
             if (tabsQueue[i] !== activeInfo.tabId) {
                 sendDetails(tabsQueue[i], "STOP");
             } else {
-                if (!scriptChanged)
+                if (!scriptChanged) {
                     sendDetails(activeInfo.tabId, "ARRIVED");
+                    scriptChanged = false;
+                }
             }
 
         }
