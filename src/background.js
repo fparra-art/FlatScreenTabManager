@@ -6,30 +6,11 @@
 // })
 
 
-chrome.tabs.onActivated.addListener(async function (activeInfo) {
-    await getAllowedTabs();
-
-
-    if (tabsQueue.find((id) => id === activeInfo.tabId) !== undefined) {
-
-        for (let i = 0; i < tabsQueue.length; i++) {
-            if (tabsQueue[i] !== activeInfo.tabId) {
-                sendDetails(tabsQueue[i], "STOP");
-            }
-            
-        }
-
-    } else {
-        for (let i = 0; i < tabsQueue.length; i++) {
-            sendDetails(tabsQueue[i], "STOP");
-        }
-    }
-});
 
 
 let tabsQueue = []; // La liste des IDs d'onglets à visiter
 let currentTabIndex = 0;
-
+let scriptChanged = false;
 
 
 async function getAllowedTabs() {
@@ -61,6 +42,8 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
     sendResponse({
         response: "Message Received"
     })
+
+    manuallyChanged = true;
 
     await getAllowedTabs();
 
@@ -128,3 +111,26 @@ function sendDetails(id, sendData) {
     });
 }
 
+
+
+chrome.tabs.onActivated.addListener(async function (activeInfo) {
+    await getAllowedTabs();
+
+    if (tabsQueue.find((id) => id === activeInfo.tabId) !== undefined) {
+
+        for (let i = 0; i < tabsQueue.length; i++) {
+            if (tabsQueue[i] !== activeInfo.tabId) {
+                sendDetails(tabsQueue[i], "STOP");
+            } else {
+                if (!scriptChanged)
+                    sendDetails(activeInfo.tabId, "ARRIVED");
+            }
+
+        }
+
+    } else {
+        for (let i = 0; i < tabsQueue.length; i++) {
+            sendDetails(tabsQueue[i], "STOP");
+        }
+    }
+});

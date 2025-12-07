@@ -38,7 +38,7 @@ let documentHeight = Math.max(body.scrollHeight, body.offsetHeight, html.clientH
 let tabsQueue = null;
 let tabId = null;
 
-let buttonsDiv;
+let buttonsDiv = null;
 const buttonArray = [];
 
 body.addEventListener("click", (e) => {
@@ -63,15 +63,15 @@ body.addEventListener("wheel", (e) => {
 
 
 
-function init() {
+function init(autoChanged = true) {
     clearInterval(myInterval);
     myInterval = setInterval(scrollTick, 16 * timeBeforeScroll);
     lastCurrentHeight = 0; //(Un curseur init à 0);
     cursorHeight = 0; //(Un curseur init à 0);
     nbSameCursorHeight = 0;
-    scrollStarted = true;
-    showButtons();
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    scrollStarted = autoChanged;
+    showButtons();
 }
 
 
@@ -184,7 +184,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.greeting === "GOOD_TO_GO") {
         tabsQueue = request.tabsList;
         tabId = request.tabId;
-        init();
+        init(true);
+    }
+
+    if (request.greeting === "ARRIVED") {
+        tabsQueue = request.tabsList;
+        tabId = request.tabId;
+        init(false);
     }
 
     if (request.greeting === "STOP") {
@@ -235,7 +241,7 @@ function OnScrollEnded() {
 }
 
 function showButtons() {
-    if (tabsQueue && tabsQueue.length > 0) {
+    if (tabsQueue && tabsQueue.length > 0 && buttonsDiv === null) {
         buttonsDiv = document.createElement("div");
         // buttonsDiv.style.border = "solid 0.2rem red";
         buttonsDiv.style.width = "100%";
@@ -254,15 +260,25 @@ function showButtons() {
             button.style.borderRadius = "2rem";
             button.style.width = "2.5rem";
             button.style.height = "2.5rem";
-
-
-            button.style.backgroundColor = tabsQueue[i] === tabId ? "green" : "red";
+            if (tabsQueue[i] === tabId) {
+                button.style.backgroundColor = scrollStarted ? "green" : "grey"
+            }
+            else {
+                button.style.backgroundColor = "red";
+            }
 
             buttonsDiv.append(button);
 
             button.addEventListener("click", (e) => {
                 if (tabsQueue[i] === tabId) {
-                    scrollStarted ? pause() : resume();
+                    if (scrollStarted) {
+                        button.style.backgroundColor = "grey";
+                        pause();
+                    }
+                    else {
+                        button.style.backgroundColor = "green";
+                        resume();
+                    }
                     return;
                 }
                 e.preventDefault();
@@ -271,5 +287,15 @@ function showButtons() {
             buttonArray.push(button);
         }
         html.append(buttonsDiv);
+        return;
     }
+
+    if (buttonArray.length > 0) {
+        buttonArray.forEach((button) => {
+            if (button.getAttribute("tabId") == tabId) {
+                button.style.backgroundColor = scrollStarted ? "green" : "grey"
+            }
+        })
+    }
+
 }

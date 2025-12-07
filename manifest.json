@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "author": "Florian Parra",
-    "version": "0.7",
+    "version": "0.8.1",
     "name": "Flat Screen Tab Manager",
     "icons": {
         "16": "images/icon-16.png",
