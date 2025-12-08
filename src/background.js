@@ -13,6 +13,7 @@ let currentTabIndex = 0;
 let scriptChanged = false;
 
 
+
 async function getAllowedTabs() {
     if (tabsQueue.length > 0) return;
 
