@@ -48,6 +48,11 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 
     await getAllowedTabs();
 
+    if (message.type === "TABS_OPENED") {
+        
+    }
+
+
     if (message.type === "MANUALLY_CHANGED_TAB") {
         if (tabsQueue.length === 0) tabsQueue = message.tabsList;
 
