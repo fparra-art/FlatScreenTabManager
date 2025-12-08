@@ -138,7 +138,7 @@ function update(dt) {
 
     documentHeight = Math.max(body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight);
 
-    if (documentHeight - 100 < screenHeight) {
+    if (documentHeight - 10 < screenHeight) {
         if (scrollStarted) {
             stop();
             OnScrollEnded();
@@ -147,7 +147,7 @@ function update(dt) {
     }
 
     const currentHeight = (window.scrollY + screenHeight);
-    const limit = documentHeight - 100;
+    const limit = documentHeight - 10;
 
 
 
