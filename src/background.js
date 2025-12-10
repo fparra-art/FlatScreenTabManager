@@ -8,6 +8,7 @@
 
 
 
+//let tabsInfo = []; // La liste des IDs d'onglets à visiter
 let tabsQueue = []; // La liste des IDs d'onglets à visiter
 let currentTabIndex = 0;
 let scriptChanged = false;
@@ -17,7 +18,7 @@ let scriptChanged = false;
 async function getAllowedTabs() {
     if (tabsQueue.length > 0) return;
 
-    console.log("searching tabs");
+    //    console.log("searching tabs");
 
     const tabs = await chrome.tabs.query({
         url: [
@@ -29,13 +30,40 @@ async function getAllowedTabs() {
     const collator = new Intl.Collator();
     tabs.sort((a, b) => collator.compare(a.title, b.title));
 
-    console.log("Tabs Found :")
-    console.log(tabs);
+    // console.log("Tabs Found :")
+    // console.log(tabs);
+
+
+    // tabs.forEach(element => {
+    //     tabsInfo.push({
+    //         id: element.id,
+    //         title: element.title
+    //     });
+    // });
+
+    // console.log("tabs info : ");
+    // console.log(tabsInfo);
 
     tabsQueue = tabs.map(t => t.id);
-
-
 }
+
+
+
+chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
+    await getAllowedTabs();
+
+    console.log("--------------------   ")
+
+    tabsQueue.forEach((id, index) => {
+        if (id == tabId && changeInfo.status === "complete") {
+            console.log(index);
+            console.log(tabId);
+            console.log(changeInfo.status);
+        }
+    })
+
+
+})
 
 // 1. Recevoir la liste depuis le Popup
 chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
@@ -49,7 +77,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
     await getAllowedTabs();
 
     if (message.type === "TABS_OPENED") {
-        
+
     }
 
 
@@ -98,9 +126,6 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
             sendDetails(tabsQueue[currentTabIndex], "GOOD_TO_GO");
         }
     }
-
-
-
 });
 
 
@@ -122,8 +147,6 @@ function sendDetails(id, sendData) {
 chrome.tabs.onActivated.addListener(async function (activeInfo) {
     await getAllowedTabs();
 
-
-    console.log(scriptChanged);
 
     if (tabsQueue.find((id) => id === activeInfo.tabId) !== undefined) {
         for (let i = 0; i < tabsQueue.length; i++) {
