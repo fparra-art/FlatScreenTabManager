@@ -27,6 +27,9 @@ fetch("../ressources/urls.json").then(async response => {
 const startButton = document.querySelector(".start-button");
 
 startButton.addEventListener("click", async (e) => {
+    chrome.runtime.sendMessage({
+        type: "RESET",
+    });
 
     const urlsList = document.querySelector(".urls-list");
     const linkArray = urlsList.querySelectorAll(".url-link");

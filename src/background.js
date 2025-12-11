@@ -29,19 +29,6 @@ async function getAllowedTabs() {
     const collator = new Intl.Collator();
     tabs.sort((a, b) => collator.compare(a.title, b.title));
 
-    // console.log("Tabs Found :")
-    // console.log(tabs);
-
-
-    // tabs.forEach(element => {
-    //     tabsInfo.push({
-    //         id: element.id,
-    //         title: element.title
-    //     });
-    // });
-
-    // console.log("tabs info : ");
-    // console.log(tabsInfo);
 
     tabsQueue = tabs.map(t => t.id);
 }
@@ -94,10 +81,12 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
     await getAllowedTabs();
 
 
-    // if (message.type === "START_SCROLL") {
-    //     chrome.tabs.update(tabsQueue[currentTabIndex], { active: true });
-    //     sendDetails(tabsQueue[currentTabIndex], "GOOD_TO_GO");
-    // }
+    if (message.type === "RESET") {
+        tabsLoadingComplete = [];
+        tabsQueue = []; // La liste des IDs d'onglets à visiter
+        currentTabIndex = 0;
+        scriptChanged = false;
+    }
 
     if (message.type === "MANUALLY_CHANGED_TAB") {
 
