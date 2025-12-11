@@ -65,6 +65,19 @@ async function CreateTabs(_array) {
 
 
 async function OpenOrRefreshTabs() {
+
+    const scrollSettings = {
+        scrollSpeed: scrollSpeedSlider.value,
+        scrollLenght: scrollLenghtSlider.value,
+    }
+
+    chrome.runtime.sendMessage({
+        type: "SCROLL_SETTINGS",
+        scrollSettingsObj: scrollSettings
+    })
+
+
+
     const existingTabs = await chrome.tabs.query({
         url: [
             "https://p.datadoghq.eu/*"
@@ -74,9 +87,7 @@ async function OpenOrRefreshTabs() {
     if (existingTabs.length > 0) {
 
         chrome.runtime.sendMessage({
-            type: "RELOAD",
-            scrollSpeed: scrollSpeedSlider.value,
-            scrollLenght: scrollLenghtSlider.value,
+            type: "RELOAD"
         });
         return;
     }
@@ -97,9 +108,7 @@ async function OpenOrRefreshTabs() {
     }
 
     chrome.runtime.sendMessage({
-        type: "TABS_OPENED",
-        scrollSpeed: scrollSpeedSlider.value,
-        scrollLenght: scrollLenghtSlider.value,
+        type: "TABS_OPENED"
     });
 }
 

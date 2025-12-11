@@ -184,6 +184,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.greeting === "GOOD_TO_GO") {
         tabsQueue = request.tabsList;
         tabId = request.tabId;
+        console.log(localStorage.getItem("scrollSettings"));
         init(true);
     }
 

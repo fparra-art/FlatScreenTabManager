@@ -41,7 +41,7 @@ async function OnTabUpdated(tabId, changeInfo, tab) {
     await getAllowedTabs();
 
 
-   // console.log("--------------------")
+    // console.log("--------------------")
 
     tabsQueue.forEach((id, index) => {
 
@@ -93,6 +93,12 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 
         default:
             break;
+    }
+
+
+    if (message.type === "SCROLL_SETTINGS") {
+        await chrome.storage.local.set(`scrollSettings:${message.scrollSettingObj}`);
+
     }
 
     if (message.type === "RELOAD") {
