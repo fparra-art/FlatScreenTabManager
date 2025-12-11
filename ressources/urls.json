@@ -13,5 +13,10 @@
             "url": "https://p.datadoghq.eu/sb/bb6fb13a-aefe-11ee-9011-da7ad0900005-79212e24f2ff4f868633d84c30a905c3?refresh_mode=sliding&from_ts=1764839960620&to_ts=1764854360620&live=true"
         }
 
+    ],
+    "urls_shortcut_for_query":[
+         "https://p.datadoghq.eu/*"
     ]
+
+    
 }

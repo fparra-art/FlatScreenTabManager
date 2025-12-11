@@ -24,28 +24,28 @@ fetch("../ressources/urls.json").then(async response => {
 
 })
 
+
+const scrollSpeedSlider = document.getElementById("scroll-speed");
+const scrollSpeedLabel = document.querySelector("label[for='scroll-speed']");
+scrollSpeedLabel.innerText = "Défilement toutes les " + scrollSpeedSlider.value / 100 + "secondes";
+
+const scrollLenghtSlider = document.getElementById("scroll-lenght");
+const scrollLenghtLabel = document.querySelector("label[for='scroll-lenght']");
+scrollLenghtLabel.innerText = scrollLenghtSlider.value + "px par défilement";
+
+
+scrollSpeedSlider.addEventListener(("change"), (e) => {
+    scrollSpeedLabel.innerText = "Défilement toutes les " + scrollSpeedSlider.value / 100 + "secondes";
+});
+
+scrollLenghtSlider.addEventListener(("change"), (e) => {
+    scrollLenghtLabel.innerText = scrollLenghtSlider.value + "px par défilement";
+});
+
 const startButton = document.querySelector(".start-button");
-
-startButton.addEventListener("click", async (e) => {
-    chrome.runtime.sendMessage({
-        type: "RESET",
-    });
-
-    const urlsList = document.querySelector(".urls-list");
-    const linkArray = urlsList.querySelectorAll(".url-link");
-    const tabs = await CreateTabs(linkArray);
-
-    const tabIds = tabs.map(({ id }) => id);
-
-    if (tabIds.length) {
-        const group = await chrome.tabs.group({ tabIds });
-        await chrome.tabGroups.update(group, { title: "Data" })
-    }
-
-    chrome.runtime.sendMessage({
-        type: "TABS_OPENED",
-    });
-})
+const refreshButton = document.querySelector(".refresh-button");
+startButton.addEventListener("click", OpenOrRefreshTabs);
+refreshButton.addEventListener("click", OpenOrRefreshTabs);
 
 async function CreateTabs(_array) {
     const tabs = []
@@ -62,6 +62,49 @@ async function CreateTabs(_array) {
     return await tabs;
 
 }
+
+
+async function OpenOrRefreshTabs() {
+    const existingTabs = await chrome.tabs.query({
+        url: [
+            "https://p.datadoghq.eu/*"
+        ]
+    });
+
+    if (existingTabs.length > 0) {
+
+        chrome.runtime.sendMessage({
+            type: "RELOAD",
+            scrollSpeed: scrollSpeedSlider.value,
+            scrollLenght: scrollLenghtSlider.value,
+        });
+        return;
+    }
+
+    chrome.runtime.sendMessage({
+        type: "CLEAR_BACKGROUND_CACHE",
+    });
+
+    const urlsList = document.querySelector(".urls-list");
+    const linkArray = urlsList.querySelectorAll(".url-link");
+    const tabs = await CreateTabs(linkArray);
+
+    const tabIds = tabs.map(({ id }) => id);
+
+    if (tabIds.length) {
+        const group = await chrome.tabs.group({ tabIds });
+        await chrome.tabGroups.update(group, { title: "Data" })
+    }
+
+    chrome.runtime.sendMessage({
+        type: "TABS_OPENED",
+        scrollSpeed: scrollSpeedSlider.value,
+        scrollLenght: scrollLenghtSlider.value,
+    });
+}
+
+
+
 
 // const statusButton = document.querySelector(".status-button");
 

@@ -20,9 +20,22 @@
 
     <h1>Onglets D'analyse</h1>
     <ul class="urls-list"></ul>
-    <button class="start-button">Ouvrir Les onglets</button>
 
-    
+
+    <div class="scroll-settings_div">
+        <div class="slider-label_div">
+            <input id="scroll-speed" type="range" value="500" min="100" max="1000" step="100"></input>
+            <label for="scroll-speed"></label>
+        </div>
+        <div class="slider-label_div">
+            <input id="scroll-lenght" type="range" value="300" min="5" max="500" step="5"></input>
+            <label for="scroll-lenght"></label>
+        </div>
+    </div>
+    <button class="start-button">Ouvrir les onglets</button>
+    <button class="refresh-button">Rafraîchir les onglets</button>
+
+
     <!-- <button class="status-button">Debug get status</button> -->
 
     <script src="./src/popup.js" type="module"></script>

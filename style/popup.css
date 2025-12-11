@@ -11,9 +11,11 @@ ul {
 li {
   padding: 0.25rem;
 }
+
 li:nth-child(odd) {
   background: #80808030;
 }
+
 li:nth-child(even) {
   background: #ffffff;
 }
@@ -21,4 +23,16 @@ li:nth-child(even) {
 h3,
 p {
   margin: 0;
+}
+
+
+.scroll-settings_div {
+  display: flex;
+  flex-direction: column;
+  margin-block: 1rem;
+}
+
+.scroll-label_div {
+  display: flex;
+  flex-direction: row;
 }

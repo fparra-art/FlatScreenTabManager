@@ -14,13 +14,13 @@ var lastScrollUpdate = Date.now();
 var lastUpdate = Date.now();
 var myRealTimeInterval = setInterval(tick, 16);
 
-var timeBeforeScroll = 300;
+var timeBeforeScroll = 100;
 var myInterval = setInterval(scrollTick, 16 * timeBeforeScroll);
 
 const screenHeight = window.innerHeight;
 const htmlPage = document.querySelector("html");
 
-const cursorIncrementPerLoop = 5 * 10; //(Un incrementation de 5px par boucle);
+const cursorIncrementPerLoop = 50; //(Un incrementation de 5px par boucle);
 let lastCurrentHeight = 0; //(Un curseur init à 0);
 let nbSameCursorHeight = 0;
 let cursorHeight = 0; //(Un curseur init à 0);
@@ -51,7 +51,7 @@ body.addEventListener("click", (e) => {
     beforeResumeCounter = timerBeforeResume;
 })
 
-body.addEventListener("wheel", (e) => {
+body.addEventListener("touchmove", (e) => {
     if (!scrollStarted) return;
 
     if (scrollStarted) {
@@ -110,7 +110,7 @@ function tick() {
 
     beforeResumeCounter -= dt / 1000;
 
-    console.log(beforeResumeCounter);
+    //console.log(beforeResumeCounter);
 
     if (beforeResumeCounter <= 0) {
         scrollStarted = true;
@@ -161,9 +161,9 @@ function update(dt) {
         }
     }
 
-    console.log(currentHeight + " <- limit = " + limit);
-    console.log("cursor same height = " + nbSameCursorHeight);
-    console.log("current height = " + currentHeight + " last current height = " + lastCurrentHeight);
+   // console.log(currentHeight + " <- limit = " + limit);
+    //console.log("cursor same height = " + nbSameCursorHeight);
+    //console.log("current height = " + currentHeight + " last current height = " + lastCurrentHeight);
 
     if (currentHeight === lastCurrentHeight) {
         nbSameCursorHeight++;
