@@ -7,8 +7,7 @@
 
 
 
-
-//let tabsInfo = []; // La liste des IDs d'onglets à visiter
+let tabsLoadingComplete = [];
 let tabsQueue = []; // La liste des IDs d'onglets à visiter
 let currentTabIndex = 0;
 let scriptChanged = false;
@@ -52,18 +51,36 @@ async function getAllowedTabs() {
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
     await getAllowedTabs();
 
-    console.log("--------------------   ")
+
+    console.log("--------------------")
 
     tabsQueue.forEach((id, index) => {
-        if (id == tabId && changeInfo.status === "complete") {
+
+        if (id == tabId && changeInfo.status === "complete" && tabsLoadingComplete.find(cid => cid == id) == undefined) {
+            tabsLoadingComplete.push(id);
             console.log(index);
             console.log(tabId);
             console.log(changeInfo.status);
+
         }
     })
 
 
+
+    if (tabsLoadingComplete.length == tabsQueue.length) {
+        StartScroll();
+    }
+
+
 })
+
+
+
+async function StartScroll() {
+    await getAllowedTabs();
+    chrome.tabs.update(tabsQueue[currentTabIndex], { active: true });
+    sendDetails(tabsQueue[currentTabIndex], "GOOD_TO_GO");
+}
 
 // 1. Recevoir la liste depuis le Popup
 chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
@@ -76,13 +93,13 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 
     await getAllowedTabs();
 
-    if (message.type === "TABS_OPENED") {
 
-    }
-
+    // if (message.type === "START_SCROLL") {
+    //     chrome.tabs.update(tabsQueue[currentTabIndex], { active: true });
+    //     sendDetails(tabsQueue[currentTabIndex], "GOOD_TO_GO");
+    // }
 
     if (message.type === "MANUALLY_CHANGED_TAB") {
-        if (tabsQueue.length === 0) tabsQueue = message.tabsList;
 
         currentTabIndex = tabsQueue.indexOf(message.lastTabId);
         sendDetails(tabsQueue[currentTabIndex], "STOP");
