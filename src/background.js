@@ -55,22 +55,19 @@ async function OnTabUpdated(tabId, changeInfo, tab) {
     await getAllowedTabs();
 
 
-    // console.log("--------------------")
+    // tabsInfo.forEach((el, index) => {
 
-    tabsQueue.forEach((id, index) => {
+    //     if (el.id == tabId && changeInfo.status === "complete" && el.status != "complete") { //&& tabsLoadingComplete.find(cid => cid == id) == undefined) {
+    //         //console.log(index);
+    //         //console.log(tabId);
+    //         //console.log(changeInfo.status);
 
-        if (id == tabId && changeInfo.status === "complete" && tabsLoadingComplete.find(cid => cid == id) == undefined) {
-            tabsLoadingComplete.push(id);
-            //console.log(index);
-            //console.log(tabId);
-            //console.log(changeInfo.status);
-
-        }
-    })
+    //     }
+    // })
 
 
 
-    if (tabsLoadingComplete.length == tabsQueue.length) {
+    if (tabsInfo.filter((el) => el.status !== "complete").length === 0) {
         StartScroll();
     }
 }
