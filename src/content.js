@@ -220,7 +220,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 function sendMessage(message) {
     chrome.runtime.sendMessage({
         type: message,
-        tabsList: tabsQueue
+        tabsList: tabsQueue,
+        tabId: tabId
     },
         (response) => {
             console.log("message from background" + response.response);

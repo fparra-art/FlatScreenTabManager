@@ -74,17 +74,16 @@ async function OnTabUpdated(tabId, changeInfo, tab) {
 
 async function StartScroll() {
     await getAllowedTabs();
-    chrome.tabs.update(tabsQueue[currentTabIndex], { active: true });
-    sendDetails(tabsQueue[currentTabIndex], "GOOD_TO_GO");
+    chrome.tabs.update(tabsInfo[currentTabIndex].id, { active: true });
+    sendDetails(tabsInfo[currentTabIndex], "GOOD_TO_GO");
 
     chrome.tabs.onUpdated.removeListener(OnTabUpdated);
 }
 
 
 async function ReloadTabs() {
-
-    tabsQueue.forEach((id) => {
-        chrome.tabs.reload(id);
+    tabsInfo.forEach((el) => {
+        chrome.tabs.reload(el.id);
     })
 }
 
@@ -119,26 +118,29 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
             ReloadTabs();
         }
 
-        tabsLoadingComplete = [];
-        tabsQueue = []; // La liste des IDs d'onglets à visiter
+        tabsInfo = [];
+        // tabsLoadingComplete = [];
+        // tabsQueue = []; // La liste des IDs d'onglets à visiter
         currentTabIndex = 0;
     }
 
     if (message.type === "CLEAR_BACKGROUND_CACHE") {
         chrome.tabs.onUpdated.addListener(OnTabUpdated);
-        tabsLoadingComplete = [];
-        tabsQueue = []; // La liste des IDs d'onglets à visiter
+        tabsInfo = [];
+        // tabsLoadingComplete = [];
+        // tabsQueue = []; // La liste des IDs d'onglets à visiter
         currentTabIndex = 0;
     }
 
     if (message.type === "MANUALLY_CHANGED_TAB") {
 
-        currentTabIndex = tabsQueue.indexOf(message.lastTabId);
-        sendDetails(tabsQueue[currentTabIndex], "STOP");
+        currentTabIndex = tabsInfo.indexOf(tabsInfo.find((el) => el.id == message.lastTabId));
+        sendDetails(tabsInfo[currentTabIndex], "STOP");
 
-        currentTabIndex = tabsQueue.indexOf(message.tabId);
-        chrome.tabs.update(tabsQueue[currentTabIndex], { active: true });
-        sendDetails(tabsQueue[currentTabIndex], "GOOD_TO_GO");
+        currentTabIndex = tabsInfo.indexOf(tabsInfo.find((el) => el.id == message.lastTabId));
+        chrome.tabs.update(tabsInfo[currentTabIndex].id, { active: true });
+        
+        sendDetails(tabsInfo[currentTabIndex], "GOOD_TO_GO");
     }
 
 
@@ -158,21 +160,21 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 
     // // 2. Recevoir le signal de fin de scroll depuis le Content Script
     if (message.type === "SCROLL_FINISHED") {
-        if (tabsQueue.length === 0) tabsQueue = message.tabsList;
-
         // Trouver l'index de l'onglet actuel
-        currentTabIndex = tabsQueue.indexOf(sender.tab.id);
+        currentTabIndex = tabsInfo.indexOf(tabsInfo.find((el) => el.id == message.tabId));
+
+        console.log(currentTabIndex);
 
         // Passer au suivant s'il en reste
         if (currentTabIndex !== -1 && currentTabIndex < tabsQueue.length - 1) {
-            const nextTabId = tabsQueue[currentTabIndex + 1];
-            chrome.tabs.update(nextTabId, { active: true });
-            sendDetails(nextTabId, "GOOD_TO_GO");
+            const nextTab = tabsInfo[currentTabIndex + 1];
+            chrome.tabs.update(nextTab.id, { active: true });
+            sendDetails(nextTab, "GOOD_TO_GO");
 
         } else {
             currentTabIndex = 0;
-            chrome.tabs.update(tabsQueue[currentTabIndex], { active: true });
-            sendDetails(tabsQueue[currentTabIndex], "GOOD_TO_GO");
+            chrome.tabs.update(tabsInfo[currentTabIndex].id, { active: true });
+            sendDetails(tabsInfo[currentTabIndex], "GOOD_TO_GO");
         }
     }
 });
@@ -180,11 +182,11 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 
 
 
-function sendDetails(id, sendData) {
-    chrome.tabs.sendMessage(id, {
+function sendDetails(tab, sendData) {
+    chrome.tabs.sendMessage(tab.id, {
         greeting: sendData,
         tabsList: tabsQueue,
-        tabId: id
+        tabId: tab.id
     }, (response) => {
         if (response)
             console.log("the response from the content script : " + response.response);
@@ -196,22 +198,19 @@ function sendDetails(id, sendData) {
 chrome.tabs.onActivated.addListener(async function (activeInfo) {
     await getAllowedTabs();
 
-
-    if (tabsQueue.find((id) => id === activeInfo.tabId) !== undefined) {
-        for (let i = 0; i < tabsQueue.length; i++) {
-            if (tabsQueue[i] !== activeInfo.tabId) {
-                sendDetails(tabsQueue[i], "STOP");
+    if (tabsInfo.find((el) => el.id === activeInfo.tabId) !== undefined) {
+        for (let i = 0; i < tabsInfo.length; i++) {
+            if (tabsInfo[i].id !== activeInfo.tabId) {
+                sendDetails(tabsInfo[i], "STOP");
             } else {
                 if (!scriptChanged) {
-                    sendDetails(activeInfo.tabId, "ARRIVED");
+                    sendDetails(tabsInfo[i], "ARRIVED");
                 }
             }
-
         }
-
     } else {
-        for (let i = 0; i < tabsQueue.length; i++) {
-            sendDetails(tabsQueue[i], "STOP");
+        for (let i = 0; i < tabsInfo.length; i++) {
+            sendDetails(tabsInfo[i], "STOP");
         }
     }
 
