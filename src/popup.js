@@ -66,17 +66,16 @@ async function CreateTabs(_array) {
 
 async function OpenOrRefreshTabs() {
 
-    const scrollSettings = {
+    const scrollSettingsObj = {
         scrollSpeed: scrollSpeedSlider.value,
-        scrollLenght: scrollLenghtSlider.value,
+        scrollLength: scrollLenghtSlider.value,
     }
 
-    chrome.runtime.sendMessage({
-        type: "SCROLL_SETTINGS",
-        scrollSettingsObj: scrollSettings
-    })
+    chrome.storage.local.set({scrollSettings: scrollSettingsObj}).then(() => {
+    });
 
 
+ 
 
     const existingTabs = await chrome.tabs.query({
         url: [

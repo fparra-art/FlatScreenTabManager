@@ -14,13 +14,13 @@ var lastScrollUpdate = Date.now();
 var lastUpdate = Date.now();
 var myRealTimeInterval = setInterval(tick, 16);
 
-var timeBeforeScroll = 100;
+let timeBeforeScroll = 100;
 var myInterval = setInterval(scrollTick, 16 * timeBeforeScroll);
 
 const screenHeight = window.innerHeight;
 const htmlPage = document.querySelector("html");
 
-const cursorIncrementPerLoop = 50; //(Un incrementation de 5px par boucle);
+let cursorIncrementPerLoop = 50; //(Un incrementation de 5px par boucle);
 let lastCurrentHeight = 0; //(Un curseur init à 0);
 let nbSameCursorHeight = 0;
 let cursorHeight = 0; //(Un curseur init à 0);
@@ -64,14 +64,24 @@ body.addEventListener("touchmove", (e) => {
 
 
 function init(autoChanged = true) {
-    clearInterval(myInterval);
-    myInterval = setInterval(scrollTick, 16 * timeBeforeScroll);
-    lastCurrentHeight = 0; //(Un curseur init à 0);
-    cursorHeight = 0; //(Un curseur init à 0);
-    nbSameCursorHeight = 0;
-    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
-    scrollStarted = autoChanged;
-    showButtons();
+
+    chrome.storage.local.get(["scrollSettings"]).then((result) => {
+        console.log(result.scrollSettings.scrollSpeed + "  " + result.scrollSettings.scrollLength);
+        timeBeforeScroll = result.scrollSettings.scrollSpeed;
+        cursorIncrementPerLoop = result.scrollSettings.scrollLength;
+
+
+
+        clearInterval(myInterval);
+        myInterval = setInterval(scrollTick, 16 * timeBeforeScroll);
+        lastCurrentHeight = 0; //(Un curseur init à 0);
+        cursorHeight = 0; //(Un curseur init à 0);
+        nbSameCursorHeight = 0;
+        window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+        scrollStarted = autoChanged;
+        showButtons();
+
+    });
 }
 
 
@@ -161,7 +171,7 @@ function update(dt) {
         }
     }
 
-   // console.log(currentHeight + " <- limit = " + limit);
+    // console.log(currentHeight + " <- limit = " + limit);
     //console.log("cursor same height = " + nbSameCursorHeight);
     //console.log("current height = " + currentHeight + " last current height = " + lastCurrentHeight);
 
@@ -184,7 +194,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.greeting === "GOOD_TO_GO") {
         tabsQueue = request.tabsList;
         tabId = request.tabId;
-        console.log(localStorage.getItem("scrollSettings"));
         init(true);
     }
 

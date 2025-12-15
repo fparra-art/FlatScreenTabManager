@@ -20,7 +20,8 @@
         "tabs",
         "tabGroups",
         "scripting",
-        "activeTab"
+        "activeTab",
+        "storage"
     ],
     "background": {
         "service_worker": "src/background.js"
