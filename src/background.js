@@ -9,14 +9,15 @@
 
 let tabsLoadingComplete = [];
 let tabsQueue = []; // La liste des IDs d'onglets à visiter
+let tabsInfo = [];
 let currentTabIndex = 0;
 let scriptChanged = false;
 
 
 
 async function getAllowedTabs() {
-    if (tabsQueue.length > 0) return;
-
+    tabsInfo.length = 0;
+    tabsQueue.length = 0;
     //    console.log("searching tabs");
 
     const tabs = await chrome.tabs.query({
@@ -30,7 +31,20 @@ async function getAllowedTabs() {
     tabs.sort((a, b) => collator.compare(a.title, b.title));
 
 
+
     tabsQueue = tabs.map(t => t.id);
+
+
+    tabs.forEach((el, i) => {
+        tabsInfo.push({ id: el.id, title: el.url, status: el.status })
+    });
+
+    tabsInfo.forEach(async (el) => {
+        const response = await fetch("../ressources/urls.json");
+        const data = await response.json();
+        const foundUrl = data.urls.find(urlList => urlList.url == el.title);
+        el.title = foundUrl == undefined ? "?" : foundUrl.name;
+    });
 }
 
 
