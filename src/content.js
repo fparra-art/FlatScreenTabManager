@@ -66,9 +66,9 @@ body.addEventListener("touchmove", (e) => {
 function init(autoChanged = true) {
 
     chrome.storage.local.get(["scrollSettings"]).then((result) => {
-        console.log(result.scrollSettings.scrollSpeed + "  " + result.scrollSettings.scrollLength);
-        timeBeforeScroll = result.scrollSettings.scrollSpeed;
-        cursorIncrementPerLoop = result.scrollSettings.scrollLength;
+
+        timeBeforeScroll = Number(result.scrollSettings.scrollSpeed);
+        cursorIncrementPerLoop = Number(result.scrollSettings.scrollLength);
 
 
 
@@ -162,7 +162,8 @@ function update(dt) {
 
 
     if (currentHeight < limit) {
-        cursorHeight += cursorIncrementPerLoop;
+        cursorHeight += Number(cursorIncrementPerLoop);
+        console.log(cursorHeight);
         window.scrollTo({ left: 0, top: cursorHeight, behavior: "smooth" });
     } else {
         if (scrollStarted) {
@@ -170,10 +171,6 @@ function update(dt) {
             OnScrollEnded();
         }
     }
-
-    // console.log(currentHeight + " <- limit = " + limit);
-    //console.log("cursor same height = " + nbSameCursorHeight);
-    //console.log("current height = " + currentHeight + " last current height = " + lastCurrentHeight);
 
     if (currentHeight === lastCurrentHeight) {
         nbSameCursorHeight++;
@@ -184,6 +181,7 @@ function update(dt) {
             }
         }
     }
+
 
     lastCurrentHeight = currentHeight;
 }

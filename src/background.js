@@ -163,7 +163,6 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
         // Trouver l'index de l'onglet actuel
         currentTabIndex = tabsInfo.indexOf(tabsInfo.find((el) => el.id == message.tabId));
 
-        console.log(currentTabIndex);
 
         // Passer au suivant s'il en reste
         if (currentTabIndex !== -1 && currentTabIndex < tabsQueue.length - 1) {
