@@ -1,4 +1,4 @@
-
+// Get the URLS and Linked Name for the popup
 fetch("../ressources/urls.json").then(async response => {
     const data = await response.json();
     const urlsList = document.querySelector(".urls-list");
@@ -25,28 +25,35 @@ fetch("../ressources/urls.json").then(async response => {
 })
 
 
+// Speed Settings 
 const scrollSpeedSlider = document.getElementById("scroll-speed");
 const scrollSpeedLabel = document.querySelector("label[for='scroll-speed']");
 scrollSpeedLabel.innerText = "Défilement toutes les " + scrollSpeedSlider.value / 100 + "secondes";
 
+// Length Settings 
 const scrollLenghtSlider = document.getElementById("scroll-lenght");
 const scrollLenghtLabel = document.querySelector("label[for='scroll-lenght']");
 scrollLenghtLabel.innerText = scrollLenghtSlider.value + "px par défilement";
 
-
+// Popup UI
 scrollSpeedSlider.addEventListener(("change"), (e) => {
     scrollSpeedLabel.innerText = "Défilement toutes les " + scrollSpeedSlider.value / 100 + "secondes";
 });
 
+// Popup UI
 scrollLenghtSlider.addEventListener(("change"), (e) => {
     scrollLenghtLabel.innerText = scrollLenghtSlider.value + "px par défilement";
 });
 
+// the two are the same
 const startButton = document.querySelector(".start-button");
 const refreshButton = document.querySelector(".refresh-button");
 startButton.addEventListener("click", OpenOrRefreshTabs);
 refreshButton.addEventListener("click", OpenOrRefreshTabs);
 
+
+// Create Tabs from an array 
+//as a function to wait for creation to be done
 async function CreateTabs(_array) {
     const tabs = []
     for (let i = 0; i < _array.length; i++) {
@@ -60,29 +67,26 @@ async function CreateTabs(_array) {
     }
 
     return await tabs;
-
 }
 
 
 async function OpenOrRefreshTabs() {
 
+    // Get the settings from UI
     const scrollSettingsObj = {
         scrollSpeed: scrollSpeedSlider.value,
         scrollLength: scrollLenghtSlider.value,
     }
 
-    chrome.storage.local.set({scrollSettings: scrollSettingsObj}).then(() => {
-    });
+    chrome.storage.local.set({scrollSettings: scrollSettingsObj});
 
-
- 
-
+    // If tabs already exists then reload them
     const existingTabs = await chrome.tabs.query({
         url: [
             "https://p.datadoghq.eu/*"
         ]
     });
-
+    /*TODO better check */
     if (existingTabs.length > 0) {
 
         chrome.runtime.sendMessage({
@@ -95,10 +99,12 @@ async function OpenOrRefreshTabs() {
         type: "CLEAR_BACKGROUND_CACHE",
     });
 
+    //Open Tabs
     const urlsList = document.querySelector(".urls-list");
     const linkArray = urlsList.querySelectorAll(".url-link");
     const tabs = await CreateTabs(linkArray);
 
+    //When Opened group tabs and send message
     const tabIds = tabs.map(({ id }) => id);
 
     if (tabIds.length) {
@@ -110,98 +116,3 @@ async function OpenOrRefreshTabs() {
         type: "TABS_OPENED"
     });
 }
-
-
-
-
-// const statusButton = document.querySelector(".status-button");
-
-// statusButton.addEventListener("click", async (e) => {
-
-
-
-//     const tabs = await chrome.tabs.query({
-//         url: [
-//             "https://p.datadoghq.eu/*"
-//         ]
-//     });
-
-
-//     const collator = new Intl.Collator();
-//     tabs.sort((a, b) => collator.compare(a.title, b.title));
-
-
-//     const tabStatus = tabs.map(({ status }) => status);
-
-//     console.log(tabStatus);
-// })
-
-
-
-
-// const tabs = await chrome.tabs.query({
-//     url: [
-//         "https://p.datadoghq.eu/*"
-//     ]
-// });
-
-
-// const collator = new Intl.Collator();
-// tabs.sort((a, b) => collator.compare(a.title, b.title));
-
-// const template = document.getElementById("li_template");
-// const elements = new Set();
-
-
-// for (const tab of tabs) {
-//     const element = template.content.firstElementChild.cloneNode(true);
-
-//     const title = tab.title.split("-")[0].trim();
-//     const pathname = new URL(tab.url).pathname.slice("/docs".length);
-
-//     element.querySelector(".title").textContent = title;
-//     element.querySelector(".pathname").textContent = pathname;
-
-//     element.querySelector("a").addEventListener("click", async () => {
-
-//         const currentActiveTab = tabs.filter(({active, selected}) => active == true && selected == true);
-
-//         chrome.runtime.sendMessage({
-//             type: "MANUALLY_CHANGED_TAB",
-//             tabId: tab.id,
-//             tabsList: tabs.map(({ id }) => id),
-//             lastTabId: currentActiveTab[0].id,
-//         });
-//     });
-
-//     elements.add(element);
-// }
-
-// document.querySelector("ul").append(...elements);
-
-// const button = document.querySelector("button");
-// button.addEventListener("click", async () => {
-//     const tabIds = tabs.map(({ id }) => id);
-//     if (tabIds.length) {
-//         const group = await chrome.tabs.group({ tabIds });
-//         await chrome.tabGroups.update(group, { title: "DOCS" });
-//     }
-// })
-
-
-// const startButton = document.querySelector(".start-button");
-
-
-// startButton.addEventListener("click", async () => {
-
-//     chrome.runtime.restart();
-
-//     const tabsIds = tabs.map(t => t.id);
-
-//     chrome.runtime.sendMessage({
-//         type: "INIT_SCROLL_SEQUENCE",
-//         tabIds: tabsIds
-//     });
-
-//     window.close();
-// })

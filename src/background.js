@@ -7,8 +7,9 @@
 
 
 
-let tabsLoadingComplete = [];
-let tabsQueue = []; // La liste des IDs d'onglets à visiter
+//let tabsLoadingComplete = [];
+//let tabsQueue = []; // La liste des IDs d'onglets à visiter
+
 let tabsInfo = [];
 let currentTabIndex = 0;
 let scriptChanged = false;
@@ -17,8 +18,7 @@ let scriptChanged = false;
 
 async function getAllowedTabs() {
     tabsInfo.length = 0;
-    tabsQueue.length = 0;
-    //    console.log("searching tabs");
+    //tabsQueue.length = 0;
 
     const tabs = await chrome.tabs.query({
         url: [
@@ -27,12 +27,12 @@ async function getAllowedTabs() {
     });
 
 
-    const collator = new Intl.Collator();
-   // tabs.sort((a, b) => collator.compare(a.title, b.title));
+   // const collator = new Intl.Collator();
+    // tabs.sort((a, b) => collator.compare(a.title, b.title));
 
 
 
-    tabsQueue = tabs.map(t => t.id);
+    //tabsQueue = tabs.map(t => t.id);
 
 
     tabs.forEach((el, i) => {
@@ -45,6 +45,8 @@ async function getAllowedTabs() {
         const foundUrl = data.urls.find(urlList => urlList.url == el.title);
         el.title = foundUrl == undefined ? "?" : foundUrl.name;
     });
+
+
 }
 
 
@@ -54,19 +56,7 @@ async function getAllowedTabs() {
 async function OnTabUpdated(tabId, changeInfo, tab) {
     await getAllowedTabs();
 
-
-    // tabsInfo.forEach((el, index) => {
-
-    //     if (el.id == tabId && changeInfo.status === "complete" && el.status != "complete") { //&& tabsLoadingComplete.find(cid => cid == id) == undefined) {
-    //         //console.log(index);
-    //         //console.log(tabId);
-    //         //console.log(changeInfo.status);
-
-    //     }
-    // })
-
-
-
+    // When all wanted tabs are on status completed start behavior
     if (tabsInfo.filter((el) => el.status !== "complete").length === 0) {
         StartScroll();
     }
@@ -91,7 +81,7 @@ async function ReloadTabs() {
 chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 
     sendResponse({
-        response: "Message Received"
+        response: `Message ${message} Received`
     })
 
     scriptChanged = true;
@@ -100,48 +90,78 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 
 
     switch (message.type) {
+        case "RELOAD":
+            chrome.tabs.onUpdated.addListener(OnTabUpdated);
+            if (tabsInfo.length > 0) {
+                ReloadTabs();
+            }
+            tabsInfo = [];
+            currentTabIndex = 0;
+            break;
+        case "CLEAR_BACKGROUND_CACHE":
+            chrome.tabs.onUpdated.addListener(OnTabUpdated);
+            tabsInfo = [];
+            currentTabIndex = 0;
+            break;
+        case "MANUALLY_CHANGED_TAB":
+            currentTabIndex = tabsInfo.indexOf(tabsInfo.find((el) => el.id == message.lastTabId));
+            sendDetails(tabsInfo[currentTabIndex], "STOP");
 
+            currentTabIndex = tabsInfo.indexOf(tabsInfo.find((el) => el.id == message.tabId));
+            chrome.tabs.update(tabsInfo[currentTabIndex].id, { active: true });
+
+            sendDetails(tabsInfo[currentTabIndex], "GOOD_TO_GO");
+            break;
+        case "SCROLL_FINISHED":
+            currentTabIndex = tabsInfo.indexOf(tabsInfo.find((el) => el.id == message.tabId));
+
+            if (currentTabIndex !== -1 && currentTabIndex < tabsInfo.length - 1) {
+                const nextTab = tabsInfo[currentTabIndex + 1];
+                chrome.tabs.update(nextTab.id, { active: true });
+                sendDetails(nextTab, "GOOD_TO_GO");
+
+            } else {
+                currentTabIndex = 0;
+                chrome.tabs.update(tabsInfo[currentTabIndex].id, { active: true });
+                sendDetails(tabsInfo[currentTabIndex], "GOOD_TO_GO");
+            }
+            break;
         default:
             break;
     }
 
 
-    if (message.type === "SCROLL_SETTINGS") {
-        await chrome.storage.local.set(`scrollSettings:${message.scrollSettingObj}`);
+    // if (message.type === "RELOAD") {
+    //     chrome.tabs.onUpdated.addListener(OnTabUpdated);
 
-    }
+    //     if (tabsQueue.length > 0) {
+    //         ReloadTabs();
+    //     }
 
-    if (message.type === "RELOAD") {
-        chrome.tabs.onUpdated.addListener(OnTabUpdated);
+    //     tabsInfo = [];
+    //     // tabsLoadingComplete = [];
+    //     // tabsQueue = []; // La liste des IDs d'onglets à visiter
+    //     currentTabIndex = 0;
+    // }
 
-        if (tabsQueue.length > 0) {
-            ReloadTabs();
-        }
+    // if (message.type === "CLEAR_BACKGROUND_CACHE") {
+    //     chrome.tabs.onUpdated.addListener(OnTabUpdated);
+    //     tabsInfo = [];
+    //     // tabsLoadingComplete = [];
+    //     // tabsQueue = []; // La liste des IDs d'onglets à visiter
+    //     currentTabIndex = 0;
+    // }
 
-        tabsInfo = [];
-        // tabsLoadingComplete = [];
-        // tabsQueue = []; // La liste des IDs d'onglets à visiter
-        currentTabIndex = 0;
-    }
+    // if (message.type === "MANUALLY_CHANGED_TAB") {
 
-    if (message.type === "CLEAR_BACKGROUND_CACHE") {
-        chrome.tabs.onUpdated.addListener(OnTabUpdated);
-        tabsInfo = [];
-        // tabsLoadingComplete = [];
-        // tabsQueue = []; // La liste des IDs d'onglets à visiter
-        currentTabIndex = 0;
-    }
+    //     currentTabIndex = tabsInfo.indexOf(tabsInfo.find((el) => el.id == message.lastTabId));
+    //     sendDetails(tabsInfo[currentTabIndex], "STOP");
 
-    if (message.type === "MANUALLY_CHANGED_TAB") {
+    //     currentTabIndex = tabsInfo.indexOf(tabsInfo.find((el) => el.id == message.tabId));
+    //     chrome.tabs.update(tabsInfo[currentTabIndex].id, { active: true });
 
-        currentTabIndex = tabsInfo.indexOf(tabsInfo.find((el) => el.id == message.lastTabId));
-        sendDetails(tabsInfo[currentTabIndex], "STOP");
-
-        currentTabIndex = tabsInfo.indexOf(tabsInfo.find((el) => el.id == message.tabId));
-        chrome.tabs.update(tabsInfo[currentTabIndex].id, { active: true });
-        
-        sendDetails(tabsInfo[currentTabIndex], "GOOD_TO_GO");
-    }
+    //     sendDetails(tabsInfo[currentTabIndex], "GOOD_TO_GO");
+    // }
 
 
     // if (message.type === "INIT_SCROLL_SEQUENCE") {
@@ -158,24 +178,24 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
     // }
 
 
-    // // 2. Recevoir le signal de fin de scroll depuis le Content Script
-    if (message.type === "SCROLL_FINISHED") {
-        // Trouver l'index de l'onglet actuel
-        currentTabIndex = tabsInfo.indexOf(tabsInfo.find((el) => el.id == message.tabId));
+    // // // 2. Recevoir le signal de fin de scroll depuis le Content Script
+    // if (message.type === "SCROLL_FINISHED") {
+    //     // Trouver l'index de l'onglet actuel
+    //     currentTabIndex = tabsInfo.indexOf(tabsInfo.find((el) => el.id == message.tabId));
 
 
-        // Passer au suivant s'il en reste
-        if (currentTabIndex !== -1 && currentTabIndex < tabsQueue.length - 1) {
-            const nextTab = tabsInfo[currentTabIndex + 1];
-            chrome.tabs.update(nextTab.id, { active: true });
-            sendDetails(nextTab, "GOOD_TO_GO");
+    //     // Passer au suivant s'il en reste
+    //     if (currentTabIndex !== -1 && currentTabIndex < tabsQueue.length - 1) {
+    //         const nextTab = tabsInfo[currentTabIndex + 1];
+    //         chrome.tabs.update(nextTab.id, { active: true });
+    //         sendDetails(nextTab, "GOOD_TO_GO");
 
-        } else {
-            currentTabIndex = 0;
-            chrome.tabs.update(tabsInfo[currentTabIndex].id, { active: true });
-            sendDetails(tabsInfo[currentTabIndex], "GOOD_TO_GO");
-        }
-    }
+    //     } else {
+    //         currentTabIndex = 0;
+    //         chrome.tabs.update(tabsInfo[currentTabIndex].id, { active: true });
+    //         sendDetails(tabsInfo[currentTabIndex], "GOOD_TO_GO");
+    //     }
+    // }
 });
 
 
@@ -184,8 +204,8 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 function sendDetails(tab, sendData) {
     chrome.tabs.sendMessage(tab.id, {
         greeting: sendData,
-        tabsList: tabsQueue,
-        tabId: tab.id
+        tabsList: (tabsInfo),
+        currentTab: tab
     }, (response) => {
         if (response)
             console.log("the response from the content script : " + response.response);

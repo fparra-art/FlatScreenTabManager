@@ -28,15 +28,15 @@ let cursorHeight = 0; //(Un curseur init à 0);
 
 let scrollStarted = false;
 
-let timerBeforeResume = 10;
+let timerBeforeResume = 30;
 let beforeResumeCounter = 0;
 
 const body = document.body;
 const html = document.documentElement;
 let documentHeight = Math.max(body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight);
 
-let tabsQueue = null;
-let tabId = null;
+let tabsList = null;
+let currentTab = null;
 
 let buttonsDiv = null;
 const buttonArray = [];
@@ -49,7 +49,7 @@ body.addEventListener("click", (e) => {
     }
     scrollStarted = false;
     beforeResumeCounter = timerBeforeResume;
-})
+});
 
 body.addEventListener("touchmove", (e) => {
     if (!scrollStarted) return;
@@ -59,7 +59,7 @@ body.addEventListener("touchmove", (e) => {
     }
     scrollStarted = false;
     beforeResumeCounter = timerBeforeResume;
-})
+});
 
 
 
@@ -69,8 +69,6 @@ function init(autoChanged = true) {
 
         timeBeforeScroll = Number(result.scrollSettings.scrollSpeed);
         cursorIncrementPerLoop = Number(result.scrollSettings.scrollLength);
-
-
 
         clearInterval(myInterval);
         myInterval = setInterval(scrollTick, 16 * timeBeforeScroll);
@@ -107,7 +105,7 @@ function resume() {
 }
 
 function tick() {
-    if (tabId === null || tabsQueue === null) {
+    if (currentTab === null || tabsList === null) {
 
         return;
     }
@@ -138,7 +136,7 @@ function scrollTick() {
 
 
 function update(dt) {
-    if (tabId === null || tabsQueue === null) {
+    if (currentTab === null || tabsList === null) {
 
         return;
     }
@@ -190,14 +188,14 @@ function update(dt) {
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.greeting === "GOOD_TO_GO") {
-        tabsQueue = request.tabsList;
-        tabId = request.tabId;
+        tabsList = request.tabsList;
+        currentTab = request.currentTab;
         init(true);
     }
 
     if (request.greeting === "ARRIVED") {
-        tabsQueue = request.tabsList;
-        tabId = request.tabId;
+        tabsList = request.tabsList;
+        currentTab = request.currentTab;
         init(false);
     }
 
@@ -205,12 +203,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         stop();
     }
 
-
     console.log("the message from the background page :" + request.greeting);
 
     sendResponse({
         response: "Message Received"
-    })
+    });
 
 });
 
@@ -218,8 +215,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 function sendMessage(message) {
     chrome.runtime.sendMessage({
         type: message,
-        tabsList: tabsQueue,
-        tabId: tabId
+        tabId: currentTab.id
     },
         (response) => {
             console.log("message from background" + response.response);
@@ -230,11 +226,9 @@ function sendMessage(message) {
 function sendManualChangeMessage(message, nextId) {
     chrome.runtime.sendMessage({
         type: message,
-        tabsList: tabsQueue,
         tabId: nextId,
-        lastTabId: tabId
-    }
-        ,
+        lastTabId: currentTab.id
+    },
         (response) => {
             console.log("message from background" + response.response);
         }
@@ -245,12 +239,12 @@ function sendManualChangeMessage(message, nextId) {
 function OnScrollEnded() {
     sendMessage("SCROLL_FINISHED");
 
-    tabsQueue = null;
-    tabId = null;
+    tabsList = null;
+    currentTab = null;
 }
 
 function showButtons() {
-    if (tabsQueue && tabsQueue.length > 0 && buttonsDiv === null) {
+    if (tabsList && tabsList.length > 0 && buttonsDiv === null) {
         buttonsDiv = document.createElement("div");
         // buttonsDiv.style.border = "solid 0.2rem red";
         buttonsDiv.style.width = "100%";
@@ -263,13 +257,13 @@ function showButtons() {
         buttonsDiv.style.left = 0;
         buttonsDiv.style.paddingInline = "20%";
 
-        for (let i = 0; i < tabsQueue.length; i++) {
+        for (let i = 0; i < tabsList.length; i++) {
             const button = document.createElement("button");
-            button.setAttribute("tabId", tabsQueue[i]);
+            button.setAttribute("tabId", tabsList[i].id);
             button.style.borderRadius = "2rem";
             button.style.width = "2.5rem";
             button.style.height = "2.5rem";
-            if (tabsQueue[i] === tabId) {
+            if (tabsList[i].id === currentTab.id) {
                 button.style.backgroundColor = scrollStarted ? "green" : "grey"
             }
             else {
@@ -279,7 +273,7 @@ function showButtons() {
             buttonsDiv.append(button);
 
             button.addEventListener("click", (e) => {
-                if (tabsQueue[i] === tabId) {
+                if (tabsList[i].id === currentTab.id) {
                     if (scrollStarted) {
                         button.style.backgroundColor = "grey";
                         pause();
@@ -291,7 +285,7 @@ function showButtons() {
                     return;
                 }
                 e.preventDefault();
-                sendManualChangeMessage("MANUALLY_CHANGED_TAB", tabsQueue[i])
+                sendManualChangeMessage("MANUALLY_CHANGED_TAB", tabsList[i].id)
             })
             buttonArray.push(button);
         }
@@ -301,7 +295,7 @@ function showButtons() {
 
     if (buttonArray.length > 0) {
         buttonArray.forEach((button) => {
-            if (button.getAttribute("tabId") == tabId) {
+            if (button.getAttribute("tabId") == currentTab.id) {
                 button.style.backgroundColor = scrollStarted ? "green" : "grey"
             }
         })
