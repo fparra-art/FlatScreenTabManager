@@ -28,7 +28,7 @@ async function getAllowedTabs() {
 
 
     const collator = new Intl.Collator();
-    tabs.sort((a, b) => collator.compare(a.title, b.title));
+   // tabs.sort((a, b) => collator.compare(a.title, b.title));
 
 
 
@@ -137,7 +137,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
         currentTabIndex = tabsInfo.indexOf(tabsInfo.find((el) => el.id == message.lastTabId));
         sendDetails(tabsInfo[currentTabIndex], "STOP");
 
-        currentTabIndex = tabsInfo.indexOf(tabsInfo.find((el) => el.id == message.lastTabId));
+        currentTabIndex = tabsInfo.indexOf(tabsInfo.find((el) => el.id == message.tabId));
         chrome.tabs.update(tabsInfo[currentTabIndex].id, { active: true });
         
         sendDetails(tabsInfo[currentTabIndex], "GOOD_TO_GO");
