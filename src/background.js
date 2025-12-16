@@ -1,15 +1,3 @@
-// chrome.runtime.onConnect.addListener((port) => {
-//     port.onMessage.addListener((message) => {
-//         console.log(message);
-//         port.postMessage('pong');
-//     })
-// })
-
-
-
-//let tabsLoadingComplete = [];
-//let tabsQueue = []; // La liste des IDs d'onglets à visiter
-
 let tabsInfo = [];
 let currentTabIndex = 0;
 let scriptChanged = false;
@@ -17,8 +5,8 @@ let scriptChanged = false;
 
 
 async function getAllowedTabs() {
-    tabsInfo.length = 0;
-    //tabsQueue.length = 0;
+
+    const tempTabs = [];
 
     const tabs = await chrome.tabs.query({
         url: [
@@ -26,27 +14,21 @@ async function getAllowedTabs() {
         ]
     });
 
-
-   // const collator = new Intl.Collator();
-    // tabs.sort((a, b) => collator.compare(a.title, b.title));
-
-
-
-    //tabsQueue = tabs.map(t => t.id);
+    const urlsJson = await GetUrlJson();
 
 
     tabs.forEach((el, i) => {
-        tabsInfo.push({ id: el.id, title: el.url, status: el.status })
+        var givenTitle;
+
+        const foundUrl = urlsJson.urls.find(urlList => urlList.url.split("?")[0] == el.url.split("?")[0]);
+
+        givenTitle = foundUrl == undefined ? "?" : foundUrl.name;
+
+        tempTabs.push({ id: el.id, title: givenTitle, status: el.status });
     });
 
-    tabsInfo.forEach(async (el) => {
-        const response = await fetch("../ressources/urls.json");
-        const data = await response.json();
-        const foundUrl = data.urls.find(urlList => urlList.url == el.title);
-        el.title = foundUrl == undefined ? "?" : foundUrl.name;
-    });
 
-
+    return tempTabs;
 }
 
 
@@ -54,22 +36,29 @@ async function getAllowedTabs() {
 
 
 async function OnTabUpdated(tabId, changeInfo, tab) {
-    await getAllowedTabs();
+    tabsInfo = await getAllowedTabs();
 
+    console.log(tabsInfo.filter((el) => el.status !== "complete"));
     // When all wanted tabs are on status completed start behavior
-    if (tabsInfo.filter((el) => el.status !== "complete").length === 0) {
+    if (tabsInfo.filter((el) => el.status !== "complete").length == 0) {
         StartScroll();
     }
 }
 
 async function StartScroll() {
-    await getAllowedTabs();
+    tabsInfo = await getAllowedTabs();
     chrome.tabs.update(tabsInfo[currentTabIndex].id, { active: true });
     sendDetails(tabsInfo[currentTabIndex], "GOOD_TO_GO");
 
     chrome.tabs.onUpdated.removeListener(OnTabUpdated);
 }
 
+async function GetUrlJson() {
+    const response = await fetch("../ressources/urls.json");
+    const data = await response.json();
+
+    return data;
+}
 
 async function ReloadTabs() {
     tabsInfo.forEach((el) => {
@@ -86,17 +75,17 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 
     scriptChanged = true;
 
-    await getAllowedTabs();
+    tabsInfo = await getAllowedTabs();
 
 
     switch (message.type) {
         case "RELOAD":
-            chrome.tabs.onUpdated.addListener(OnTabUpdated);
             if (tabsInfo.length > 0) {
-                ReloadTabs();
+                await ReloadTabs();
             }
             tabsInfo = [];
             currentTabIndex = 0;
+            chrome.tabs.onUpdated.addListener(OnTabUpdated);
             break;
         case "CLEAR_BACKGROUND_CACHE":
             chrome.tabs.onUpdated.addListener(OnTabUpdated);

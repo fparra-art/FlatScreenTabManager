@@ -1,15 +1,3 @@
-// const port = chrome.runtime.connect();
-
-// port.onMessage.addListener(message => {
-//     console.log(message);
-// })
-
-
-// setInterval(() => {
-//     port.postMessage('ping');
-// },10000)
-
-
 var lastScrollUpdate = Date.now();
 var lastUpdate = Date.now();
 var myRealTimeInterval = setInterval(tick, 16);
@@ -118,7 +106,6 @@ function tick() {
 
     beforeResumeCounter -= dt / 1000;
 
-    //console.log(beforeResumeCounter);
 
     if (beforeResumeCounter <= 0) {
         scrollStarted = true;
@@ -137,7 +124,6 @@ function scrollTick() {
 
 function update(dt) {
     if (currentTab === null || tabsList === null) {
-
         return;
     }
 
@@ -253,16 +239,28 @@ function showButtons() {
         buttonsDiv.style.justifyContent = "space-between";
         buttonsDiv.style.position = "fixed";
         buttonsDiv.style.zIndex = 100;
-        buttonsDiv.style.top = 0;
+        buttonsDiv.style.top = "20px";
         buttonsDiv.style.left = 0;
         buttonsDiv.style.paddingInline = "20%";
 
         for (let i = 0; i < tabsList.length; i++) {
+
+            const buttonInnerDiv = document.createElement("div");
+            buttonInnerDiv.style.display = "flex";
+            buttonInnerDiv.style.flexDirection = "column";
+            buttonInnerDiv.style.justifyContent = "center";
+            buttonInnerDiv.style.alignItems = "center";
+
             const button = document.createElement("button");
             button.setAttribute("tabId", tabsList[i].id);
             button.style.borderRadius = "2rem";
             button.style.width = "2.5rem";
             button.style.height = "2.5rem";
+
+            const buttonTitle = document.createElement("h4");
+            buttonTitle.innerText = tabsList[i].title;
+            buttonTitle.style.textAlign = "center";
+
             if (tabsList[i].id === currentTab.id) {
                 button.style.backgroundColor = scrollStarted ? "green" : "grey"
             }
@@ -270,7 +268,9 @@ function showButtons() {
                 button.style.backgroundColor = "red";
             }
 
-            buttonsDiv.append(button);
+            buttonInnerDiv.append(button)
+            buttonInnerDiv.append(buttonTitle)
+            buttonsDiv.append(buttonInnerDiv);
 
             button.addEventListener("click", (e) => {
                 if (tabsList[i].id === currentTab.id) {
